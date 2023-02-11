@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>ansible入门 | Rindemon</title><meta name="keywords" content="ansible"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">ansible入门</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span><span><i class="yufont icon-rili"></i>2023-2-10</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="ansible自动化运维"><a href="#ansible自动化运维" class="headerlink" title="ansible自动化运维"></a>ansible自动化运维</h1><h2 id="1-安装ansible"><a href="#1-安装ansible" class="headerlink" title="1.安装ansible"></a>1.安装ansible</h2><p>直接采用yum安装即可，需要安装epel源</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>ansible入门 | Rindemon</title><meta name="keywords" content="ansible"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">ansible入门</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span><span><i class="yufont icon-rili"></i>2023-2-11</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="ansible自动化运维"><a href="#ansible自动化运维" class="headerlink" title="ansible自动化运维"></a>ansible自动化运维</h1><h2 id="1-安装ansible"><a href="#1-安装ansible" class="headerlink" title="1.安装ansible"></a>1.安装ansible</h2><p>直接采用yum安装即可，需要安装epel源</p>
 <pre><code class="sh">sudo yum install epel-release -y
 sudo yum install ansible -y
 </code></pre>
@@ -530,6 +530,56 @@ server_name=wangc.store
 
 ## db-[99:101]-node.example.com
 </code></pre>
+<h4 id="2-2-1-主机清单分组"><a href="#2-2-1-主机清单分组" class="headerlink" title="2.2.1.主机清单分组"></a>2.2.1.主机清单分组</h4><pre><code class="sh">[root@server01 ~]# cat ansible/hosts 
+[webserver]
+172.16.1.1
+[dbserver]
+172.16.10.1
+[lbserver]
+172.20.10.2
+[backup]
+172.16.20.4
+[server:children]
+webserver
+dbserver
+lbserver
+</code></pre>
+<h4 id="2-2-2-主机清单子组"><a href="#2-2-2-主机清单子组" class="headerlink" title="2.2.2.主机清单子组"></a>2.2.2.主机清单子组</h4><pre><code class="sh">[root@server01 ~]# cat ansible/hosts 
+[webserver]
+172.16.1.1
+[dbserver]
+172.16.10.1
+[lbserver]
+172.20.10.2
+[backup]
+172.16.20.4
+[server:children]
+webserver
+dbserver
+lbserver
+</code></pre>
+<h4 id="2-2-3-主机清单与密码"><a href="#2-2-3-主机清单与密码" class="headerlink" title="2.2.3.主机清单与密码"></a>2.2.3.主机清单与密码</h4><pre><code class="sh">[root@server01 ~]# cat ansible/hosts 
+[webserver]
+172.16.1.1 ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+[dbserver]
+172.16.10.1
+[lbserver]
+172.20.10.2
+[backup]
+172.16.20.4
+[server:children]
+webserver
+dbserver
+lbserver
+
+#设置参数，端口、用户、密码
+[webserver:vars]
+ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+[server]
+ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+[all:vars]
+ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+</code></pre>
 <h3 id="2-3-组变量yml文件"><a href="#2-3-组变量yml文件" class="headerlink" title="2.3.组变量yml文件"></a>2.3.组变量yml文件</h3><p>存放位置为</p>
 <pre><code class="sh">/etc/ansible/group_vars/xxx.yml
 #此处创建hexo组的yml文件
@@ -631,6 +681,9 @@ total 4
 #　　link：创建链接文件
 #   hard：创建硬连接
 </code></pre>
+<ul>
+<li>template 分发文件并解析变量</li>
+</ul>
 <h3 id="4-3-软件包管理（yum）"><a href="#4-3-软件包管理（yum）" class="headerlink" title="4.3.软件包管理（yum）"></a>4.3.软件包管理（yum）</h3><pre><code class="sh">~]$ ansible hexo -m yum -a &quot;name=net-tools state=present&quot; --become --become-user=root --ask-become-pass
 BECOME password: 
 192.168.181.131 | CHANGED =&gt; &#123;
@@ -675,7 +728,7 @@ ansible hexo -m user -a &quot;name=c state=absent remove=yes&quot; -u root -k
 <p>从仓库拉取代码</p>
 <pre><code class="sh">ansible hexo -m git -a &quot;repo=http://101.37.173.91:6503/c/notes.git dist=/tmp/notes&quot;
 </code></pre>
-<h3 id="4-6-管理服务（service）"><a href="#4-6-管理服务（service）" class="headerlink" title="4.6.管理服务（service）"></a>4.6.管理服务（service）</h3><ul>
+<h3 id="4-6-管理服务（service-systemd）"><a href="#4-6-管理服务（service-systemd）" class="headerlink" title="4.6.管理服务（service|systemd）"></a>4.6.管理服务（service|systemd）</h3><ul>
 <li>四个状态</li>
 </ul>
 <pre><code class="sh">reloaded, restarted, started, stopped
@@ -709,6 +762,16 @@ SSH password:
     &#125;, 
     &quot;changed&quot;: false
 &#125;
+</code></pre>
+<h3 id="4-8-挂载文件系统（mount）"><a href="#4-8-挂载文件系统（mount）" class="headerlink" title="4.8.挂载文件系统（mount）"></a>4.8.挂载文件系统（mount）</h3><pre><code class="sh"># fstype:指定文件系统
+# src：源地址
+# path：挂载点
+# state：
+# - absent：卸载并修改/etc/fstab
+# - unmounted：卸载而不修改/etc/fstab
+# - present：挂载，仅修改/etc/fstab 重启生效
+# - mounted：挂载并修改/etc/fstab
+# - remounted：重新挂载
 </code></pre>
 <h2 id="5-PlayBook"><a href="#5-PlayBook" class="headerlink" title="5.PlayBook"></a>5.PlayBook</h2><blockquote>
 <p>特点</p>
@@ -769,6 +832,82 @@ playbook: example.yaml
  #跳过remove file
   ~]$ ansible-playbook  example.yaml --skip-tags &quot;remove file&quot;
 </code></pre>
+<ul>
+<li>使用when</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  # vars:
+  #   file: ansible/vars
+  #   dir: /root
+  vars_files: /root/ansible/vars
+  tasks:
+    - name: print_vars
+      debug:
+        msg: &quot;&#123;&#123; dir &#125;&#125;变量&#123;&#123; file &#125;&#125;&quot;
+    - when: (ansible_nodename == &#39;server02&#39;) #精确匹配
+    # - when: (ansible_nodename is match(&#39;server02|server03&#39;)) # 包含，match支持正则表达式  
+</code></pre>
+<ul>
+<li>使用with_items</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  gather_facts: false
+  tasks:
+    - name: restart services
+      systemd: 
+        name: &quot;&#123;&#123; item &#125;&#125;&quot;
+        state: restarted
+      with_items:
+        - nginx
+        - php-fpm
+        - httpd
+</code></pre>
+<h3 id="5-3-ansible中的变量"><a href="#5-3-ansible中的变量" class="headerlink" title="5.3.ansible中的变量"></a>5.3.ansible中的变量</h3><ul>
+<li>引入变量文件</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  # vars:
+  #   file: ansible/vars
+  #   dir: /root
+  vars_files: /root/ansible/vars
+  tasks:
+    - name: print_vars
+      debug:
+        msg: &quot;&#123;&#123; dir &#125;&#125;变量&#123;&#123; file &#125;&#125;&quot;
+</code></pre>
+<pre><code class="sh"># 根据主机清单自动识别变量
+group_vars/
+  - lbserver/vars.yaml
+  - webserver/vars.yaml
+  - dbserver/vars.yaml
+  - all/vars.yaml
+</code></pre>
+<pre><code class="yaml"># 变量文件
+port: 8080
+port: 80
+</code></pre>
+<ul>
+<li>ansible内置变量facts</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  # gather_facts: false 关闭内置变量
+  tasks:
+    - name: print_facts
+      debug:
+        msg: &quot;&#123;&#123; ansible_nodename &#125;&#125;&quot;
+</code></pre>
+<ul>
+<li>register注册变量</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  tasks:
+    - name: get date
+      command: date &#39;+%F %T&#39;
+      register: time
+    - name: print time
+      debug:
+        msg: &quot;&#123;&#123; time.stdout &#125;&#125;&quot;
+</code></pre>
 <h3 id="5-4-debug"><a href="#5-4-debug" class="headerlink" title="5.4.debug"></a>5.4.debug</h3><pre><code class="yaml">---
 - hosts: hexo
   user: root
@@ -794,16 +933,78 @@ playbook: example.yaml
 </code></pre>
 <pre><code class="sh">ansible-playbook  example.yaml --tags=debug
 </code></pre>
-</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/ansible/">ansible</a></div></article><div class="article-copyright"><p>标题: <a href="/2023/02/10/ansible%E5%85%A5%E9%97%A8/">ansible入门</a></p><p> 链接: <a href="/2023/02/10/ansible%E5%85%A5%E9%97%A8/">http://cwang110.github.io/2023/02/10/ansible%E5%85%A5%E9%97%A8/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-02-10</p></div><div class="page_turning"><a class="page_up" href="/2023/02/04/mysql%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/"
-  style="background-image:url(/assets/images/random/29.jpg)">
+<h2 id="6-ansible命令参数"><a href="#6-ansible命令参数" class="headerlink" title="6.ansible命令参数"></a>6.ansible命令参数</h2><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-i</td>
+<td>inventory list 指定主机清单</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>module 指定模块</td>
+</tr>
+<tr>
+<td>-a</td>
+<td>action 指定动作（一般是模块中选项参数，命令）</td>
+</tr>
+</tbody></table>
+<h2 id="7-使用role拆分ansible-playbook"><a href="#7-使用role拆分ansible-playbook" class="headerlink" title="7.使用role拆分ansible-playbook"></a>7.使用role拆分ansible-playbook</h2><pre><code class="sh">[root@server01 ansible]# tree 
+.
+├── group_vars
+│   ├── all
+│   │   └── vars.yaml
+│   └── server
+│       └── vars.yaml
+├── inventory
+│   └── hosts
+├── main.yaml
+└── roles
+    ├── basic
+    │   ├── files
+    │   ├── handlers
+    │   ├── tasks
+    │   └── templates
+    │       └── template.j2
+    ├── db
+    │   ├── files
+    │   ├── handlers
+    │   ├── tasks
+    │   └── templates
+    ├── lb
+    │   ├── files
+    │   ├── handlers
+    │   ├── tasks
+    │   └── templates
+    └── server
+        ├── files
+        ├── handlers
+        ├── tasks
+        └── templates
+</code></pre>
+<pre><code class="yaml">- hosts: all
+  roles:
+    -role: basic
+
+- hosts: web
+  roles:
+    - role: web
+    - role: install
+</code></pre>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/ansible/">ansible</a></div></article><div class="article-copyright"><p>标题: <a href="/2023/02/10/ansible%E5%85%A5%E9%97%A8/">ansible入门</a></p><p> 链接: <a href="/2023/02/10/ansible%E5%85%A5%E9%97%A8/">http://cwang110.github.io/2023/02/10/ansible%E5%85%A5%E9%97%A8/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-02-11</p></div><div class="page_turning"><a class="page_up" href="/2023/02/04/mysql%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/"
+  style="background-image:url(/assets/images/random/1.jpg)">
   <div class="inner"><span>上一篇:</span>
     <p>mysql常见数据类型</p>
   </div>
 </a>
 <a class="page_down" href="/2023/02/10/lvm%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/"
-style="background-image:url(/assets/images/random/26.jpg)">
+style="background-image:url(/assets/images/random/33.jpg)">
 <div class="inner"><span>下一篇:</span>
   <p>lvm逻辑卷管理</p>
 </div>
 </a>
-</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>29</span><p>文章</p></div></li><li> <div> <span>6</span><p>分类</p></div></li><li> <div> <span>8</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ansible%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4"><span class="toc-number">1.</span> <span class="toc-text">ansible自动化运维</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%89%E8%A3%85ansible"><span class="toc-number">1.1.</span> <span class="toc-text">1.安装ansible</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ansible%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">2.ansible配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BB%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1.主配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-hosts%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2.hosts文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%BB%84%E5%8F%98%E9%87%8Fyml%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3.组变量yml文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BD%BF%E7%94%A8ansible"><span class="toc-number">1.3.</span> <span class="toc-text">3.使用ansible</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%90%91%E4%B8%BB%E6%9C%BA%E6%88%96%E4%B8%BB%E6%9C%BA%E7%BB%84%E5%8F%91%E9%80%81%E5%91%BD%E4%BB%A4"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1.向主机或主机组发送命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-ad-hoc"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2.ad-hoc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%98%BE%E7%A4%BA%E5%B0%86%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E7%9A%84%E4%B8%BB%E6%9C%BA"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3.显示将执行命令的主机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%98%BE%E7%A4%BA%E8%AF%A6%E7%BB%86%E7%9A%84%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4.显示详细的执行过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-ansible%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97"><span class="toc-number">1.4.</span> <span class="toc-text">4.ansible常用模块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%89%A7%E8%A1%8Cshell%E5%91%BD%E4%BB%A4%EF%BC%88command%E5%92%8Cshell%EF%BC%89"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1.执行shell命令（command和shell）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93%EF%BC%88copy%E5%92%8Cfile%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2.文件传输（copy和file）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86%EF%BC%88yum%EF%BC%89"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3.软件包管理（yum）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%EF%BC%88user%EF%BC%89"><span class="toc-number">1.4.4.</span> <span class="toc-text">4.4.用户和组（user）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E9%83%A8%E7%BD%B2%EF%BC%88git%EF%BC%89"><span class="toc-number">1.4.5.</span> <span class="toc-text">4.5.从源代码管理系统部署（git）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1%EF%BC%88service%EF%BC%89"><span class="toc-number">1.4.6.</span> <span class="toc-text">4.6.管理服务（service）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-%E6%94%B6%E9%9B%86%E7%9B%AE%E6%A0%87%E4%B8%BB%E6%9C%BA%E4%BF%A1%E6%81%AF%EF%BC%88setup%EF%BC%89"><span class="toc-number">1.4.7.</span> <span class="toc-text">4.7.收集目标主机信息（setup）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-PlayBook"><span class="toc-number">1.5.</span> <span class="toc-text">5.PlayBook</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-yaml%E8%AF%AD%E6%B3%95%E6%A3%80%E6%9F%A5"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1.yaml语法检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2.流程控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-debug"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.4.debug</span></a></li></ol></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (3)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a>.</span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>29</span><p>文章</p></div></li><li> <div> <span>6</span><p>分类</p></div></li><li> <div> <span>8</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ansible%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4"><span class="toc-number">1.</span> <span class="toc-text">ansible自动化运维</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%89%E8%A3%85ansible"><span class="toc-number">1.1.</span> <span class="toc-text">1.安装ansible</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ansible%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">2.ansible配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BB%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1.主配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-hosts%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2.hosts文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E4%B8%BB%E6%9C%BA%E6%B8%85%E5%8D%95%E5%88%86%E7%BB%84"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">2.2.1.主机清单分组</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E4%B8%BB%E6%9C%BA%E6%B8%85%E5%8D%95%E5%AD%90%E7%BB%84"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">2.2.2.主机清单子组</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E4%B8%BB%E6%9C%BA%E6%B8%85%E5%8D%95%E4%B8%8E%E5%AF%86%E7%A0%81"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">2.2.3.主机清单与密码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%BB%84%E5%8F%98%E9%87%8Fyml%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3.组变量yml文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BD%BF%E7%94%A8ansible"><span class="toc-number">1.3.</span> <span class="toc-text">3.使用ansible</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%90%91%E4%B8%BB%E6%9C%BA%E6%88%96%E4%B8%BB%E6%9C%BA%E7%BB%84%E5%8F%91%E9%80%81%E5%91%BD%E4%BB%A4"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1.向主机或主机组发送命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-ad-hoc"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2.ad-hoc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%98%BE%E7%A4%BA%E5%B0%86%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E7%9A%84%E4%B8%BB%E6%9C%BA"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3.显示将执行命令的主机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%98%BE%E7%A4%BA%E8%AF%A6%E7%BB%86%E7%9A%84%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4.显示详细的执行过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-ansible%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97"><span class="toc-number">1.4.</span> <span class="toc-text">4.ansible常用模块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%89%A7%E8%A1%8Cshell%E5%91%BD%E4%BB%A4%EF%BC%88command%E5%92%8Cshell%EF%BC%89"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1.执行shell命令（command和shell）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93%EF%BC%88copy%E5%92%8Cfile%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2.文件传输（copy和file）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86%EF%BC%88yum%EF%BC%89"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3.软件包管理（yum）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%EF%BC%88user%EF%BC%89"><span class="toc-number">1.4.4.</span> <span class="toc-text">4.4.用户和组（user）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E9%83%A8%E7%BD%B2%EF%BC%88git%EF%BC%89"><span class="toc-number">1.4.5.</span> <span class="toc-text">4.5.从源代码管理系统部署（git）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1%EF%BC%88service-systemd%EF%BC%89"><span class="toc-number">1.4.6.</span> <span class="toc-text">4.6.管理服务（service|systemd）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-%E6%94%B6%E9%9B%86%E7%9B%AE%E6%A0%87%E4%B8%BB%E6%9C%BA%E4%BF%A1%E6%81%AF%EF%BC%88setup%EF%BC%89"><span class="toc-number">1.4.7.</span> <span class="toc-text">4.7.收集目标主机信息（setup）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-8-%E6%8C%82%E8%BD%BD%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%EF%BC%88mount%EF%BC%89"><span class="toc-number">1.4.8.</span> <span class="toc-text">4.8.挂载文件系统（mount）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-PlayBook"><span class="toc-number">1.5.</span> <span class="toc-text">5.PlayBook</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-yaml%E8%AF%AD%E6%B3%95%E6%A3%80%E6%9F%A5"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1.yaml语法检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2.流程控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-ansible%E4%B8%AD%E7%9A%84%E5%8F%98%E9%87%8F"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3.ansible中的变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-debug"><span class="toc-number">1.5.4.</span> <span class="toc-text">5.4.debug</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-ansible%E5%91%BD%E4%BB%A4%E5%8F%82%E6%95%B0"><span class="toc-number">1.6.</span> <span class="toc-text">6.ansible命令参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E4%BD%BF%E7%94%A8role%E6%8B%86%E5%88%86ansible-playbook"><span class="toc-number">1.7.</span> <span class="toc-text">7.使用role拆分ansible-playbook</span></a></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (3)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a>.</span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>
