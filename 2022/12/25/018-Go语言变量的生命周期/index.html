@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>018-Go语言变量的生命周期 | Rindemon</title><meta name="keywords" content="Golang"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">018-Go语言变量的生命周期</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="018-Go语言变量的生命周期"><a href="#018-Go语言变量的生命周期" class="headerlink" title="018-Go语言变量的生命周期"></a>018-Go语言变量的生命周期</h1><p>变量的生命周期指的是在程序运行期间变量有效存在的时间间隔。</p>
+<p>变量的生命周期与变量的作用域有着不可分割的联系：</p>
+<ul>
+<li>全局变量：它的生命周期和整个程序的运行周期是一致的；</li>
+<li>局部变量：它的生命周期则是动态的，从创建这个变量的声明语句开始，到这个变量不再被引用为止；</li>
+<li>形式参数和函数返回值：它们都属于局部变量，在函数被调用的时候创建，函数调用结束后被销毁</li>
+</ul>
+<pre><code class="go">for t := 0.0; t &lt; cycles*2*math.Pi; t += res &#123;
+    x := math.Sin(t)
+    y := math.Sin(t*freq + phase)
+    img.SetColorIndex(
+        size+int(x*size+0.5), size+int(y*size+0.5),
+        blackIndex, // 最后插入的逗号不会导致编译错误，这是Go编译器的一个特性
+    )               // 小括号另起一行缩进，和大括号的风格保存一致
+&#125;
+</code></pre>
+<p>上面代码中，在每次循环的开始会创建临时变量 t，然后在每次循环迭代中创建临时变量 x 和 y。临时变量 x、y 存放在栈中，随着函数执行结束（执行遇到最后一个<code>&#125;</code>），释放其内存。</p>
+<p>堆和栈的区别：</p>
+<ul>
+<li>堆（heap）：堆是用于存放进程执行中被动态分配的内存段。它的大小并不固定，可动态扩张或缩减。当进程调用 malloc 等函数分配内存时，新分配的内存就被动态加入到堆上（堆被扩张）。当利用 free 等函数释放内存时，被释放的内存从堆中被剔除（堆被缩减）；</li>
+<li>栈(stack)：栈又称堆栈， 用来存放程序暂时创建的局部变量，也就是我们函数的大括号<code>&#123; &#125;</code>中定义的局部变量。</li>
+</ul>
+<p>在程序的编译阶段，编译器会根据实际情况自动选择在栈或者堆上分配局部变量的存储空间，不论使用 var 还是 new 关键字声明变量都不会影响编译器的选择。</p>
+<pre><code class="go">var global *int
+func f() &#123;
+    var x int
+    x = 1
+    global = &amp;x
+&#125;
+func g() &#123;
+    y := new(int)
+    *y = 1
+&#125;
+</code></pre>
+<p>上述代码中，函数 f 里的变量 x 必须在堆上分配，因为它在函数退出后依然可以通过包一级的 global 变量找到，虽然它是在函数内部定义的。用Go语言的术语说，这个局部变量 x 从函数 f 中逃逸了。</p>
+<p>相反，当函数 g 返回时，变量 *y 不再被使用，也就是说可以马上被回收的。因此，*y 并没有从函数 g 中逃逸，编译器可以选择在栈上分配 *y 的存储空间，也可以选择在堆上分配，然后由Go语言的 GC（垃圾回收机制）回收这个变量的内存空间。</p>
+<p>在实际的开发中，并不需要刻意的实现变量的逃逸行为，因为逃逸的变量需要额外分配内存，同时对性能的优化可能会产生细微的影响。</p>
+<p>虽然Go语言能够帮助我们完成对内存的分配和释放，但是为了能够开发出高性能的应用我们任然需要了解变量的声明周期。例如，如果将局部变量赋值给全局变量，将会阻止 GC 对这个局部变量的回收，导致不必要的内存占用，从而影响程序的性能。</p>
+<blockquote>
+<p>搬运于<a target="_blank" rel="noopener" href="http://c.biancheng.net/">C语言中文网</a></p>
+</blockquote>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/Golang/">Golang</a></div></article><div class="article-copyright"><p>标题: <a href="/2022/12/25/018-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/">018-Go语言变量的生命周期</a></p><p> 链接: <a href="/2022/12/25/018-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/">http://cwang110.github.io/2022/12/25/018-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2022/12/25/019-Go%E8%AF%AD%E8%A8%80%E5%B8%B8%E9%87%8F/"
+  style="background-image:url(/assets/images/random/13.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>019-Go语言常量</p>
+  </div>
+</a>
+<a class="page_down" href="/2022/12/25/017-Go%E8%AF%AD%E8%A8%80%E6%8C%87%E9%92%88/"
+style="background-image:url(/assets/images/random/23.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>017-Go语言指针</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#018-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">1.</span> <span class="toc-text">018-Go语言变量的生命周期</span></a></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>kubeadm安装k8s集群 | Rindemon</title><meta name="keywords" content="kubeenetes"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">kubeadm安装k8s集群</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span><span><i class="yufont icon-rili"></i>2023-5-26</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="kubeadm安装k8s集群"><a href="#kubeadm安装k8s集群" class="headerlink" title="kubeadm安装k8s集群"></a>kubeadm安装k8s集群</h1><h2 id="一、系统环境"><a href="#一、系统环境" class="headerlink" title="一、系统环境"></a>一、系统环境</h2><h3 id="1-虚拟机准备"><a href="#1-虚拟机准备" class="headerlink" title="1.虚拟机准备"></a>1.虚拟机准备</h3><table>
+<thead>
+<tr>
+<th>OS</th>
+<th>hostname</th>
+<th>IP地址</th>
+<th>memory</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Centos 7</td>
+<td>master01</td>
+<td>192.168.94.31</td>
+<td>2G</td>
+</tr>
+<tr>
+<td>Centos 7</td>
+<td>node01</td>
+<td>192.168.94.32</td>
+<td>2G</td>
+</tr>
+<tr>
+<td>Centos 7</td>
+<td>node02</td>
+<td>192.168.94.33</td>
+<td>2G</td>
+</tr>
+</tbody></table>
+<h3 id="2-关闭selinux"><a href="#2-关闭selinux" class="headerlink" title="2.关闭selinux"></a>2.关闭selinux</h3><pre><code class="sh">sed -i &quot;s/SELINUX\=.*/SELINUX=disabled/g&quot; /etc/selinux/config
+setenforce 0
+</code></pre>
+<h3 id="3-关闭防火墙"><a href="#3-关闭防火墙" class="headerlink" title="3.关闭防火墙"></a>3.关闭防火墙</h3><pre><code class="sh">systemctl disable firewalld --now # firewalld
+systemctl stop iptables &amp;&amp; systemctl disable iptables	#iptables
+</code></pre>
+<h3 id="4-安装必要工具"><a href="#4-安装必要工具" class="headerlink" title="4.安装必要工具"></a>4.安装必要工具</h3><pre><code class="sh">yum install -y wget net-tools tree nmap sysstat dos2unix bind-utils telnet
+</code></pre>
+<h3 id="5-修改主机名-amp-设置IP地址"><a href="#5-修改主机名-amp-设置IP地址" class="headerlink" title="5.修改主机名&amp;设置IP地址"></a>5.修改主机名&amp;设置IP地址</h3><pre><code class="sh">sed -i &#39;s/BOOTPROTO=\&quot;dhcp\&quot;/BOOTPROTO=\&quot;static\&quot;/g&#39; /etc/sysconfig/network-scripts/ifcfg-ens33 
+tee &gt;&gt;/etc/sysconfig/network-scripts/ifcfg-ens33&lt;&lt; EOF
+IPADDR=192.168.94.33
+MASK=255.255.255.0
+GATEWAY=172.20.20.2
+DNS1=192.168.1.254
+EOF
+systemctl restart network
+hostnamectl set-hostname master01
+hostnamectl set-hostname node01
+hostnamectl set-hostname node02
+</code></pre>
+<h3 id="6-添加hosts解析"><a href="#6-添加hosts解析" class="headerlink" title="6.添加hosts解析"></a>6.添加hosts解析</h3><pre><code class="sh">echo -e &quot;192.168.134.10 k8s-01\n192.168.134.11 k8s-02\n192.168.134.12 k8s-03&quot; &gt;&gt; /etc/hosts
+echo -e &quot;127.0.0.1 master01\n192.168.94.31 master01\n192.168.94.32 node01\n192.168.94.33 node02&quot; &gt; /etc/hosts
+</code></pre>
+<h3 id="7-设置k8s内核参数"><a href="#7-设置k8s内核参数" class="headerlink" title="7.设置k8s内核参数"></a>7.设置k8s内核参数</h3><ul>
+<li>设置内核参数</li>
+</ul>
+<pre><code class="shell">cat &lt;&lt; EOF &gt; /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+vm.swappiness=0
+EOF
+</code></pre>
+<ul>
+<li>加载内核模块</li>
+</ul>
+<pre><code class="shell">modprobe br_netfilter
+echo &quot;modprobe br_netfilter&quot; &gt;&gt; /etc/rc.local
+</code></pre>
+<ul>
+<li>使内核参数生效</li>
+</ul>
+<pre><code class="sh">sysctl -p /etc/sysctl.d/k8s.conf
+</code></pre>
+<h3 id="8-关闭系统swap"><a href="#8-关闭系统swap" class="headerlink" title="8.关闭系统swap"></a>8.关闭系统swap</h3><pre><code class="sh">swapoff -a #临时
+sed -ri &#39;s/.*swap.*/#&amp;/&#39; /etc/fstab	#永久
+</code></pre>
+<h3 id="9-修改防火墙策略"><a href="#9-修改防火墙策略" class="headerlink" title="9.修改防火墙策略"></a>9.修改防火墙策略</h3><pre><code class="shell">/sbin/iptables -P FORWARD ACCEPT
+echo  &quot;sleep 60 &amp;&amp; /sbin/iptables -P FORWARD ACCEPT&quot; &gt;&gt; /etc/rc.local
+</code></pre>
+<h3 id="10-安装依赖包"><a href="#10-安装依赖包" class="headerlink" title="10.安装依赖包"></a>10.安装依赖包</h3><pre><code class="shell">yum install -y yum-utils device-mapper-persistent-data lvm2 net-tools conntrack-tools wget epel-release
+</code></pre>
+<h3 id="11-时间同步"><a href="#11-时间同步" class="headerlink" title="11.时间同步"></a>11.时间同步</h3><pre><code class="shell">yum -y install ntpdate
+/usr/sbin/ntpdate -u ntpserver1: ntp1.aliyun.com
+/usr/sbin/ntpdate -u ntp1.aliyun.com
+</code></pre>
+<h3 id="12-安装docker-ce软件"><a href="#12-安装docker-ce软件" class="headerlink" title="12.安装docker-ce软件"></a>12.安装docker-ce软件</h3><pre><code>yum remove docker \
+docker-client \
+docker-client-latest \
+docker-common \
+docker-latest \
+docker-latest-logrotate \
+docker-logrotate \
+docker-selinux \
+docker-engine-selinux \
+docker-engine
+
+rm -rf /etc/systemd/system/docker.service.d
+rm -rf /var/lib/docker
+rm -rf /var/run/docker
+
+
+yum install -y docker-ce-3:19.03.9-3.el7.x86_64 docker-ce-cli-3:19.03.9-3.el7.x86_64 containerd.io
+</code></pre>
+<h3 id="二、安装k8s核心组件"><a href="#二、安装k8s核心组件" class="headerlink" title="二、安装k8s核心组件"></a>二、安装k8s核心组件</h3><p>配置源</p>
+<pre><code class="sh">tee &gt;&gt;/etc/yum.repos.d/kubernetes.repo&lt;&lt;EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+</code></pre>
+<p>移除旧版本</p>
+<pre><code class="sh">yum remove -y kubelet kubeadm kubectl
+</code></pre>
+<p>安装指定版本组件</p>
+<pre><code class="sh">yum install -y kubelet-1.21.0 kubeadm-1.21.0 kubectl-1.21.0
+</code></pre>
+<p>开机启动kubelet</p>
+<pre><code class="sh">systemctl enable kubelet &amp;&amp; systemctl start kubelet
+</code></pre>
+<p>查看需要的镜像</p>
+<pre><code class="sh">kubeadm config images list --kubernetes-version=v1.21.0
+#查看需要的镜像
+#测试国内直接拉不下来,稍微写个脚本拉取镜像并重新打上tag
+
+#!/bin/bash
+registry=registry.aliyuncs.com/google_containers/
+images=(
+    kube-apiserver:v1.21.7
+    kube-controller-manager:v1.21.7
+    kube-scheduler:v1.21.7
+    kube-proxy:v1.21.7
+    pause:3.4.1
+    etcd:3.4.13-0
+    coredns:v1.8.0
+)
+for imagesNAME in $&#123;images[@]&#125;; do
+    docker pull $registry$imagesNAME 
+done
+docker tag registry.aliyuncs.com/google_containers/coredns:v1.8.0 registry.aliyuncs.com/google_containers/coredns/coredns:v1.8.0
+</code></pre>
+<p>初始化master节点</p>
+<pre><code class="sh">kubeadm init \
+--apiserver-advertise-address=192.168.134.10		#master节点地址
+--image-repository=registry.aliyuncs.com/google_containers/							可以指定镜像仓库
+--kubernetes-version=v1.21.0					#指定版本
+--service-cidr
+--pod-network-cidr
+
+kubeadm init \
+--apiserver-advertise-address=192.168.94.31 \
+--image-repository=registry.aliyuncs.com/google_containers \
+--kubernetes-version=v1.21.0 \
+--service-cidr=10.0.0.0/16 \
+--pod-network-cidr=172.16.0.0/16
+
+#打印的安装日志
+[init] Using Kubernetes version: v1.21.0
+[preflight] Running pre-flight checks
+    [WARNING IsDockerSystemdCheck]: detected &quot;cgroupfs&quot; as the Docker cgroup driver. The recommended driver is &quot;systemd&quot;. Please follow the guide at https://kubernetes.io/docs/setup/cri/
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using &#39;kubeadm config images pull&#39;
+[certs] Using certificateDir folder &quot;/etc/kubernetes/pki&quot;
+[certs] Generating &quot;ca&quot; certificate and key
+[certs] Generating &quot;apiserver&quot; certificate and key
+[certs] apiserver serving cert is signed for DNS names [kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local master01] and IPs [10.0.0.1 192.168.94.31]
+[certs] Generating &quot;apiserver-kubelet-client&quot; certificate and key
+[certs] Generating &quot;front-proxy-ca&quot; certificate and key
+[certs] Generating &quot;front-proxy-client&quot; certificate and key
+[certs] Generating &quot;etcd/ca&quot; certificate and key
+[certs] Generating &quot;etcd/server&quot; certificate and key
+[certs] etcd/server serving cert is signed for DNS names [localhost master01] and IPs [192.168.94.31 127.0.0.1 ::1]
+[certs] Generating &quot;etcd/peer&quot; certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [localhost master01] and IPs [192.168.94.31 127.0.0.1 ::1]
+[certs] Generating &quot;etcd/healthcheck-client&quot; certificate and key
+[certs] Generating &quot;apiserver-etcd-client&quot; certificate and key
+[certs] Generating &quot;sa&quot; key and public key
+[kubeconfig] Using kubeconfig folder &quot;/etc/kubernetes&quot;
+[kubeconfig] Writing &quot;admin.conf&quot; kubeconfig file
+[kubeconfig] Writing &quot;kubelet.conf&quot; kubeconfig file
+[kubeconfig] Writing &quot;controller-manager.conf&quot; kubeconfig file
+[kubeconfig] Writing &quot;scheduler.conf&quot; kubeconfig file
+[kubelet-start] Writing kubelet environment file with flags to file &quot;/var/lib/kubelet/kubeadm-flags.env&quot;
+[kubelet-start] Writing kubelet configuration to file &quot;/var/lib/kubelet/config.yaml&quot;
+[kubelet-start] Starting the kubelet
+[control-plane] Using manifest folder &quot;/etc/kubernetes/manifests&quot;
+[control-plane] Creating static Pod manifest for &quot;kube-apiserver&quot;
+[control-plane] Creating static Pod manifest for &quot;kube-controller-manager&quot;
+[control-plane] Creating static Pod manifest for &quot;kube-scheduler&quot;
+[etcd] Creating static Pod manifest for local etcd in &quot;/etc/kubernetes/manifests&quot;
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory &quot;/etc/kubernetes/manifests&quot;. This can take up to 4m0s
+[kubelet-check] Initial timeout of 40s passed.
+[apiclient] All control plane components are healthy after 62.526899 seconds
+[upload-config] Storing the configuration used in ConfigMap &quot;kubeadm-config&quot; in the &quot;kube-system&quot; Namespace
+[kubelet] Creating a ConfigMap &quot;kubelet-config-1.21&quot; in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node master01 as control-plane by adding the labels: [node-role.kubernetes.io/master(deprecated) node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node master01 as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: 96dfgr.n9hu2329hh3ix4uv
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the &quot;cluster-info&quot; ConfigMap in the &quot;kube-public&quot; namespace
+[kubelet-finalize] Updating &quot;/etc/kubernetes/kubelet.conf&quot; to point to a rotatable kubelet client certificate and key
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run &quot;kubectl apply -f [podnetwork].yaml&quot; with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.94.31:6443 --token 96dfgr.n9hu2329hh3ix4uv \
+    --discovery-token-ca-cert-hash sha256:19e0089821254ed1cd60f2e674e6ff5c2af94f13185de1269df3c666be627c42 
+</code></pre>
+<p>安装calico</p>
+<pre><code class="sh">kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+</code></pre>
+<p>node节点加入集群</p>
+<pre><code class="sh">kubeadm join 192.168.94.31:6443 --token 96dfgr.n9hu2329hh3ix4uv \
+    --discovery-token-ca-cert-hash sha256:19e0089821254ed1cd60f2e674e6ff5c2af94f13185de1269df3c666be627c42 
+#token过期则需要重新创建一个
+kubeadm token create --print-join-command
+</code></pre>
+<p>给node节点打上标签</p>
+<pre><code class="sh">kubectl label node k8s-02 node-role.kubernetes.io/worker=&#39;k8s-01&#39;
+</code></pre>
+<p>设置ipvs模式</p>
+<p>k8s整个集群为了访问通:默认使用iptables</p>
+<pre><code class="sh">#查看默认kube-proxy使用的模式
+kubectl logs -n kube-system kube-proxy-28xv4
+#修改模式
+kubectl edit cm kube-proxy -n kube-system
+#修改完成后重启kube-proxy生效
+kubectl delete pod kube-proxy-xxx -n kube-system 
+</code></pre>
+<p>创建deployment进行测试</p>
+<pre><code class="sh">[root@master01 ~]# kubectl create deploy my-nginx --image=nginx
+deployment.apps/my-nginx created
+[root@master01 ~]# kubectl get pod -owide
+NAME                        READY   STATUS    RESTARTS   AGE    IP               NODE     NOMINATED NODE   READINESS GATES
+my-nginx-6b74b79f57-66j2q   1/1     Running   0          100s   192.168.140.65   node02   &lt;none&gt;           &lt;none&gt;
+[root@master01 ~]# curl 192.168.140.65
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Welcome to nginx!&lt;/title&gt;
+&lt;style&gt;
+html &#123; color-scheme: light dark; &#125;
+body &#123; width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; &#125;
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
+&lt;p&gt;If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.&lt;/p&gt;
+
+&lt;p&gt;For online documentation and support please refer to
+&lt;a href=&quot;http://nginx.org/&quot;&gt;nginx.org&lt;/a&gt;.&lt;br/&gt;
+Commercial support is available at
+&lt;a href=&quot;http://nginx.com/&quot;&gt;nginx.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h2 id="三、Kubernetes实战"><a href="#三、Kubernetes实战" class="headerlink" title="三、Kubernetes实战"></a>三、Kubernetes实战</h2><h3 id="1-部署一个应用"><a href="#1-部署一个应用" class="headerlink" title="1.部署一个应用"></a>1.部署一个应用</h3><p>创建应用及创建一次部署,一次部署,可以自愈</p>
+<ul>
+<li><code>kubectl create deployment xxx --image=xxx</code></li>
+<li>api-server复制将创建信息保存至etcd</li>
+</ul>
+<pre><code class="sh">#部署一个nginx
+kubectl create deployment my-nginx --image=nginx
+#kubectl run可以创建一个pod,但是不能自愈
+kubectl run my-test --image=nginx
+</code></pre>
+<h3 id="2-一些常用的故障排除命令"><a href="#2-一些常用的故障排除命令" class="headerlink" title="2.一些常用的故障排除命令"></a>2.一些常用的故障排除命令</h3><p>查看资源</p>
+<pre><code class="sh">#查看k8s资源
+kubectl api-resources
+#查看k8s名称空间中的资源
+kubectl api-resources --namespaced=true
+#查看k8s名称空间外的资源
+kubectl api-resources --namespaced=false
+</code></pre>
+<p>查看资源详情</p>
+<pre><code class="sh">kubectl describe node node01
+kubectl describe pod xxx
+</code></pre>
+<p>查看日志</p>
+<pre><code class="sh">kubectl logs xxx
+</code></pre>
+<p>进入容器</p>
+<pre><code class="sh">kubectl exec -it pod名 -- /bin/bash
+</code></pre>
+<h3 id="3-对外暴露服务端口"><a href="#3-对外暴露服务端口" class="headerlink" title="3.对外暴露服务端口"></a>3.对外暴露服务端口</h3><p>将一次部署封装成serivce并使用ClusterIP对外暴露</p>
+<pre><code class="sh">[root@master01 ~]# kubectl expose deploy test --port=80 --target-port=80 --type=ClusterIP
+service/test exposed
+#自带负载均衡,只能在集群内部使用
+</code></pre>
+<p>将一次部署封装成serivce并使用NodePort对外暴露</p>
+<pre><code class="sh">[root@master01 ~]# kubectl expose deploy test --port=80 --target-port=80 --type=NodePort
+</code></pre>
+<h3 id="4-手动扩缩容操作"><a href="#4-手动扩缩容操作" class="headerlink" title="4.手动扩缩容操作"></a>4.手动扩缩容操作</h3><pre><code class="sh">#将部署 test 扩容到2份
+kubectl scale --replicas=2 deploy test
+[root@master01 ~]# kubectl get deploy
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+test   2/2     2            2           22h
+#将部署 test 缩容到1份
+[root@master01 ~]# kubectl scale --replicas=1 deploy test
+deployment.apps/test scaled
+[root@master01 ~]# kubectl get deploy
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+test   1/1     1            1           22h
+[root@master01 ~]# 
+</code></pre>
+<h3 id="5-灰度发布"><a href="#5-灰度发布" class="headerlink" title="5.灰度发布"></a>5.灰度发布</h3><pre><code class="sh">#升级版本
+kubectl set image deploy test nginx=nginx:1.7.2
+#记录本次升级的信息
+kubectl set image deploy test nginx=nginx:1.7.2 --record
+#查看历史发布
+kubectl rollout history depoly test 
+#回滚操作,回滚到指定版本
+kubectl rollout undo deploy test --revison=1
+#回滚到上一个版本
+kubectl rollout undo deploy test
+</code></pre>
+<h3 id="6-声明式API"><a href="#6-声明式API" class="headerlink" title="6.声明式API"></a>6.声明式API</h3><p>对象用文件的方式描述:yaml,每一种资源都可以通过yaml文件描述</p>
+<ul>
+<li>yaml模板文件</li>
+</ul>
+<pre><code class="sh">apiVersion: apps/v1  # 指定api版本，此值必须在kubectl api-versions中  
+kind: Deployment  # 指定创建资源的角色/类型   
+metadata:  # 资源的元数据/属性 
+  name: demo  # 资源的名字，在同一个namespace中必须唯一
+  namespace: default # 部署在哪个namespace中
+  labels:  # 设定资源的标签
+    app: demo
+    version: stable
+spec: # 资源规范字段
+  replicas: 1 # 声明副本数目
+  revisionHistoryLimit: 3 # 保留历史版本
+  selector: # 选择器
+    matchLabels: # 匹配标签
+      app: demo
+      version: stable
+  strategy: # 策略
+    rollingUpdate: # 滚动更新
+      maxSurge: 30% # 最大额外可以存在的副本数，可以为百分比，也可以为整数
+      maxUnavailable: 30% # 示在更新过程中能够进入不可用状态的 Pod 的最大值，可以为百分比，也可以为整数
+    type: RollingUpdate # 滚动更新策略
+  template: # 模版
+    metadata: # 资源的元数据/属性 
+      annotations: # 自定义注解列表
+        sidecar.istio.io/inject: &quot;false&quot; # 自定义注解名字
+      labels: # 设定资源的标签
+        app: demo
+        version: stable
+    spec: # 资源规范字段
+      containers:
+      - name: demo # 容器的名字   
+        image: demo:v1 # 容器使用的镜像地址   
+        imagePullPolicy: IfNotPresent # 每次Pod启动拉取镜像策略，三个选择 Always、Never、IfNotPresent
+                                      # Always，每次都检查；Never，每次都不检查（不管本地是否有）；IfNotPresent，如果本地有就不检查，如果没有就拉取 
+        resources: # 资源管理
+          limits: # 最大使用
+            cpu: 300m # CPU，1核心 = 1000m
+            memory: 500Mi # 内存，1G = 1000Mi
+          requests:  # 容器运行时，最低资源需求，也就是说最少需要多少资源容器才能正常运行
+            cpu: 100m
+            memory: 100Mi
+        livenessProbe: # pod 内部健康检查的设置
+          httpGet: # 通过httpget检查健康，返回200-399之间，则认为容器正常
+            path: /healthCheck # URI地址
+            port: 8080 # 端口
+            scheme: HTTP # 协议
+            # host: 127.0.0.1 # 主机地址
+          initialDelaySeconds: 30 # 表明第一次检测在容器启动后多长时间后开始
+          timeoutSeconds: 5 # 检测的超时时间
+          periodSeconds: 30 # 检查间隔时间
+          successThreshold: 1 # 成功门槛
+          failureThreshold: 5 # 失败门槛，连接失败5次，pod杀掉，重启一个新的pod
+        readinessProbe: # Pod 准备服务健康检查设置
+          httpGet:
+            path: /healthCheck
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 5
+        #也可以用这种方法   
+        #exec: 执行命令的方法进行监测，如果其退出码不为0，则认为容器正常   
+        #  command:   
+        #    - cat   
+        #    - /tmp/health   
+        #也可以用这种方法   
+        #tcpSocket: # 通过tcpSocket检查健康  
+        #  port: number 
+        ports:
+          - name: http # 名称
+            containerPort: 8080 # 容器开发对外的端口 
+            protocol: TCP # 协议
+      imagePullSecrets: # 镜像仓库拉取密钥
+        - name: harbor-certification
+      affinity: # 亲和性调试
+        nodeAffinity: # 节点亲和力
+          requiredDuringSchedulingIgnoredDuringExecution: # pod 必须部署到满足条件的节点上
+            nodeSelectorTerms: # 节点满足任何一个条件就可以
+            - matchExpressions: # 有多个选项，则只有同时满足这些逻辑选项的节点才能运行 pod
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+</code></pre>
+<ul>
+<li>应用或者删除一个yaml</li>
+</ul>
+<pre><code class="sh">#应用
+kubectl apply -f xxx.yaml	
+#删除
+kubectl delete -f xxx.yaml
+</code></pre>
+<ul>
+<li>玩转yaml写法</li>
+</ul>
+<blockquote>
+<p>三个命令</p>
+</blockquote>
+<pre><code class="sh">kubectl get xxx -oyaml
+kubectl create xxxx xxx --dry-run=client -oyaml
+kubectl explain xxx xxx
+</code></pre>
+<blockquote>
+<p>给VSCode安装插件</p>
+</blockquote>
+<ol>
+<li>安装Yaml插件</li>
+<li>安装Kubernetes Templates</li>
+</ol>
+<h3 id="7-部署dashboard"><a href="#7-部署dashboard" class="headerlink" title="7.部署dashboard"></a>7.部署dashboard</h3><p>部署dashborad</p>
+<pre><code class="sh">kubectl apply -f https://kuboard.cn/install-script/k8s-dashboard/v2.0.0-beta5.yaml
+</code></pre>
+<p>获取登陆token</p>
+<pre><code class="sh">kubectl -n kube-system describe $(kubectl -n kube-system get secret -n kube-system -o name | grep namespace) | grep token
+</code></pre>
+<p>创建绑定用户</p>
+<pre><code class="sh">#创建一个叫admin-user的服务账号:
+# admin-user.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kube-system
+[root@k8s01 ~]# kubectl create -f admin-user.yaml
+
+# 直接绑定admin角色:
+# admin-user-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kube-system
+[root@k8s01 ~]# kubectl create -f  admin-user-role-binding.yaml
+</code></pre>
+<p>修改dashboard端口类型</p>
+<pre><code class="sh">
+</code></pre>
+<h3 id="k8s命令行自动补全"><a href="#k8s命令行自动补全" class="headerlink" title="k8s命令行自动补全"></a>k8s命令行自动补全</h3><ul>
+<li>安装bash-completion</li>
+</ul>
+<pre><code class="sh">yum install -y bash-completion
+</code></pre>
+<ul>
+<li>在文件 ~&#x2F;.bashrc 中导入（source）补全脚本：</li>
+</ul>
+<pre><code class="sh">echo &#39;source &lt;(kubectl completion bash)&#39; &gt;&gt;~/.bashrc
+</code></pre>
+<ul>
+<li>将补全脚本添加到目录 &#x2F;etc&#x2F;bash_completion.d 中：</li>
+</ul>
+<pre><code class="sh">kubectl completion bash &gt;/etc/bash_completion.d/kubectl
+</code></pre>
+<ul>
+<li>刷新shell</li>
+</ul>
+<pre><code class="sh">source /usr/share/bash-completion/bash_completion
+</code></pre>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/kubeenetes/">kubeenetes</a></div></article><div class="article-copyright"><p>标题: <a href="/2023/05/26/%5Bkubernetes%5D-kubeadm%E5%AE%89%E8%A3%85/">kubeadm安装k8s集群</a></p><p> 链接: <a href="/2023/05/26/%5Bkubernetes%5D-kubeadm%E5%AE%89%E8%A3%85/">http://cwang110.github.io/2023/05/26/%5Bkubernetes%5D-kubeadm%E5%AE%89%E8%A3%85/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2023/04/05/pip%E5%AE%89%E8%A3%85python-iptables%E6%8A%A5%E9%94%99/"
+  style="background-image:url(/assets/images/random/29.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>pip安装python-iptables报错</p>
+  </div>
+</a>
+<a class="page_down" href="javascript:;"
+style="background-image:url(/assets/images/random/34.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>已经没有下一篇了</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#kubeadm%E5%AE%89%E8%A3%85k8s%E9%9B%86%E7%BE%A4"><span class="toc-number">1.</span> <span class="toc-text">kubeadm安装k8s集群</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%B3%BB%E7%BB%9F%E7%8E%AF%E5%A2%83"><span class="toc-number">1.1.</span> <span class="toc-text">一、系统环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%87%86%E5%A4%87"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.虚拟机准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%85%B3%E9%97%ADselinux"><span class="toc-number">1.1.2.</span> <span class="toc-text">2.关闭selinux</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%85%B3%E9%97%AD%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-number">1.1.3.</span> <span class="toc-text">3.关闭防火墙</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%AE%89%E8%A3%85%E5%BF%85%E8%A6%81%E5%B7%A5%E5%85%B7"><span class="toc-number">1.1.4.</span> <span class="toc-text">4.安装必要工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E4%BF%AE%E6%94%B9%E4%B8%BB%E6%9C%BA%E5%90%8D-amp-%E8%AE%BE%E7%BD%AEIP%E5%9C%B0%E5%9D%80"><span class="toc-number">1.1.5.</span> <span class="toc-text">5.修改主机名&amp;设置IP地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%B7%BB%E5%8A%A0hosts%E8%A7%A3%E6%9E%90"><span class="toc-number">1.1.6.</span> <span class="toc-text">6.添加hosts解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E8%AE%BE%E7%BD%AEk8s%E5%86%85%E6%A0%B8%E5%8F%82%E6%95%B0"><span class="toc-number">1.1.7.</span> <span class="toc-text">7.设置k8s内核参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-%E5%85%B3%E9%97%AD%E7%B3%BB%E7%BB%9Fswap"><span class="toc-number">1.1.8.</span> <span class="toc-text">8.关闭系统swap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E4%BF%AE%E6%94%B9%E9%98%B2%E7%81%AB%E5%A2%99%E7%AD%96%E7%95%A5"><span class="toc-number">1.1.9.</span> <span class="toc-text">9.修改防火墙策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%8C%85"><span class="toc-number">1.1.10.</span> <span class="toc-text">10.安装依赖包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5"><span class="toc-number">1.1.11.</span> <span class="toc-text">11.时间同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-%E5%AE%89%E8%A3%85docker-ce%E8%BD%AF%E4%BB%B6"><span class="toc-number">1.1.12.</span> <span class="toc-text">12.安装docker-ce软件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AE%89%E8%A3%85k8s%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc-number">1.1.13.</span> <span class="toc-text">二、安装k8s核心组件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Kubernetes%E5%AE%9E%E6%88%98"><span class="toc-number">1.2.</span> <span class="toc-text">三、Kubernetes实战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E9%83%A8%E7%BD%B2%E4%B8%80%E4%B8%AA%E5%BA%94%E7%94%A8"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.部署一个应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%80%E4%BA%9B%E5%B8%B8%E7%94%A8%E7%9A%84%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4%E5%91%BD%E4%BB%A4"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.一些常用的故障排除命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%AF%B9%E5%A4%96%E6%9A%B4%E9%9C%B2%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%8F%A3"><span class="toc-number">1.2.3.</span> <span class="toc-text">3.对外暴露服务端口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%89%8B%E5%8A%A8%E6%89%A9%E7%BC%A9%E5%AE%B9%E6%93%8D%E4%BD%9C"><span class="toc-number">1.2.4.</span> <span class="toc-text">4.手动扩缩容操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%81%B0%E5%BA%A6%E5%8F%91%E5%B8%83"><span class="toc-number">1.2.5.</span> <span class="toc-text">5.灰度发布</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E5%A3%B0%E6%98%8E%E5%BC%8FAPI"><span class="toc-number">1.2.6.</span> <span class="toc-text">6.声明式API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E9%83%A8%E7%BD%B2dashboard"><span class="toc-number">1.2.7.</span> <span class="toc-text">7.部署dashboard</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#k8s%E5%91%BD%E4%BB%A4%E8%A1%8C%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8"><span class="toc-number">1.2.8.</span> <span class="toc-text">k8s命令行自动补全</span></a></li></ol></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

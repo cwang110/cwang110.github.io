@@ -1,0 +1,1010 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>ansible入门 | Rindemon</title><meta name="keywords" content="ansible"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">ansible入门</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="ansible自动化运维"><a href="#ansible自动化运维" class="headerlink" title="ansible自动化运维"></a>ansible自动化运维</h1><h2 id="1-安装ansible"><a href="#1-安装ansible" class="headerlink" title="1.安装ansible"></a>1.安装ansible</h2><p>直接采用yum安装即可，需要安装epel源</p>
+<pre><code class="sh">sudo yum install epel-release -y
+sudo yum install ansible -y
+</code></pre>
+<h2 id="2-ansible配置文件"><a href="#2-ansible配置文件" class="headerlink" title="2.ansible配置文件"></a>2.ansible配置文件</h2><h3 id="2-1-主配置文件"><a href="#2-1-主配置文件" class="headerlink" title="2.1.主配置文件"></a>2.1.主配置文件</h3><pre><code class="sh">cat /etc/ansible/ansible.cfg
+[defaults]
+# 定义默认的hosts文件路径，支持相对路径
+inventory      = ./hosts
+# 定义默认扩展库路径，自定义的模块可以放这里
+library        = ./library
+#module_utils   = /usr/share/my_module_utils/
+# 默认的远端节点脚本复制过去后的路径,与ansible执行机制有关
+#remote_tmp     = ~/.ansible/tmp
+# 本地的
+#local_tmp      = ~/.ansible/tmp
+# 默认是5个并发进程forks
+#forks          = 5
+# 轮巡间隔
+#poll_interval  = 15
+# sudo的用户
+#sudo_user      = root
+#ask_sudo_pass = True
+#ask_pass      = True
+#transport      = smart
+# 默认端口
+#remote_port    = 22
+#module_lang    = C
+#module_set_locale = False
+
+# smart - gather by default, but don&#39;t regather if already gathered
+# implicit 开启gather_facts，如果需要关闭则需明文设置 gather_facts: False
+# explicit 关闭gather_facts，如果需要开启则需明文设置gather_facts: True
+gathering = explicit
+
+# This only affects the gathering done by a play&#39;s gather_facts directive,
+# by default gathering retrieves all facts subsets
+# all - gather all subsets
+# network - gather min and network facts
+# hardware - gather hardware facts (longest facts to retrieve)
+# virtual - gather min and virtual facts
+# facter - import facts from facter
+# ohai - import facts from ohai
+# You can combine them using comma (ex: network,virtual)
+# You can negate them using ! (ex: !hardware,!facter,!ohai)
+# A minimal set of facts is always gathered.
+#gather_subset = all
+
+# some hardware related facts are collected
+# with a maximum timeout of 10 seconds. This
+# option lets you increase or decrease that
+# timeout to something more suitable for the
+# environment. 
+# gather_timeout = 10
+
+# additional paths to search for roles in, colon separated
+roles_path    = /etc/ansible/roles:/usr/share/ansible/roles
+
+# uncomment this to disable SSH key host checking
+host_key_checking = False
+
+# change the default callback, you can only have one &#39;stdout&#39; type  enabled at a time.
+# default stdout_callback = default
+# skippy :
+# actionable : 只显示changed状态的tasks
+# oneline : like ansible-playbook -o *.yml  display on oneline for every action
+# minimal : display every action is or not excuted
+# debug :  显示debug信息
+stdout_callback = debug
+
+
+# enable callback plugins, they can output to stdout but cannot be &#39;stdout&#39; type.
+#callback_whitelist = timer, mail
+# 回调显示 timer显示每个tasks的时间
+callback_whitelist = timer
+
+# Determine whether includes in tasks and handlers are &quot;static&quot; by
+# default. As of 2.0, includes are dynamic by default. Setting these
+# values to True will make includes behave more like they did in the
+# 1.x versions.
+#task_includes_static = True
+#handler_includes_static = True
+
+# Controls if a missing handler for a notification event is an error or a warning
+#error_on_missing_handler = True
+
+# change this for alternative sudo implementations
+#sudo_exe = sudo
+
+# What flags to pass to sudo
+# WARNING: leaving out the defaults might create unexpected behaviours
+#sudo_flags = -H -S -n
+
+# SSH timeout
+timeout = 20
+
+# default user to use for playbooks if user is not specified
+# (/usr/bin/ansible will use current user as default)
+# 指定远程的用户为root，则不需要在playbook中指定remote_user: root
+remote_user = root
+
+# 如果注释此选项则不输出执行日志，开启可以将playbook的执行过程写入日志路径，但是该日志不会归档
+log_path = /var/log/ansible.log
+
+# default module name for /usr/bin/ansible
+module_name = command
+
+# use this shell for commands executed under sudo
+# you may need to change this to bin/bash in rare instances
+# if sudo is constrained
+executable = /bin/sh
+
+# if inventory variables overlap, does the higher precedence one win
+# or are hash values merged together?  The default is &#39;replace&#39; but
+# this can also be set to &#39;merge&#39;.
+#hash_behaviour = replace
+
+# by default, variables from roles will be visible in the global variable
+# scope. To prevent this, the following option can be enabled, and only
+# tasks and handlers within the role will see the variables there
+#private_role_vars = yes
+
+# jinja2的扩展模块支持，可以根据jinja2版本新增加的扩容库添加
+jinja2_extensions = jinja2.ext.do,jinja2.ext.i18n,jinja2.ext.loopcontrols,jinja2.ext.with_, jinja2.ext.autoescape
+
+# if set, always use this private key file for authentication, same as
+# if passing --private-key to ansible or ansible-playbook
+#private_key_file = /path/to/file
+
+# If set, configures the path to the Vault password file as an alternative to
+# specifying --vault-password-file on the command line.
+#vault_password_file = /path/to/vault_password_file
+
+# format of string &#123;&#123; ansible_managed &#125;&#125; available within Jinja2
+# templates indicates to users editing templates files will be replaced.
+# replacing &#123;file&#125;, &#123;host&#125; and &#123;uid&#125; and strftime codes with proper values.
+#ansible_managed = Ansible managed: &#123;file&#125; modified on %Y-%m-%d %H:%M:%S by &#123;uid&#125; on &#123;host&#125;
+# &#123;file&#125;, &#123;host&#125;, &#123;uid&#125;, and the timestamp can all interfere with idempotence
+# in some situations so the default is a static string:
+#ansible_managed = Ansible managed
+
+# by default, ansible-playbook will display &quot;Skipping [host]&quot; if it determines a task
+# should not be run on a host.  Set this to &quot;False&quot; if you don&#39;t want to see these &quot;Skipping&quot;
+# messages. NOTE: the task header will still be shown regardless of whether or not the
+# task is skipped.
+display_skipped_hosts = True
+
+# by default, if a task in a playbook does not include a name: field then
+# ansible-playbook will construct a header that includes the task&#39;s action but
+# not the task&#39;s args.  This is a security feature because ansible cannot know
+# if the *module* considers an argument to be no_log at the time that the
+# header is printed.  If your environment doesn&#39;t have a problem securing
+# stdout from ansible-playbook (or you have manually specified no_log in your
+# playbook on all of the tasks where you have secret information) then you can
+# safely set this to True to get more informative messages.
+#display_args_to_stdout = False
+
+# by default (as of 1.3), Ansible will raise errors when attempting to dereference
+# Jinja2 variables that are not set in templates or action lines. Uncomment this line
+# to revert the behavior to pre-1.3.
+#error_on_undefined_vars = False
+
+# by default (as of 1.6), Ansible may display warnings based on the configuration of the
+# system running ansible itself. This may include warnings about 3rd party packages or
+# other conditions that should be resolved if possible.
+# to disable these warnings, set the following value to False:
+system_warnings = False
+
+# by default (as of 1.4), Ansible may display deprecation warnings for language
+# features that should no longer be used and will be removed in future versions.
+# to disable these warnings, set the following value to False:
+deprecation_warnings = False
+
+# (as of 1.8), Ansible can optionally warn when usage of the shell and
+# command module appear to be simplified by using a default Ansible module
+# instead.  These warnings can be silenced by adjusting the following
+# setting or adding warn=yes or warn=no to the end of the command line
+# parameter string.  This will for example suggest using the git module
+# instead of shelling out to the git command.
+ command_warnings = False
+
+
+# set plugin path directories here, separate with colons
+#action_plugins     = /usr/share/ansible/plugins/action
+#cache_plugins      = /usr/share/ansible/plugins/cache
+#callback_plugins   = /usr/share/ansible/plugins/callback
+#connection_plugins = /usr/share/ansible/plugins/connection
+#lookup_plugins     = /usr/share/ansible/plugins/lookup
+#inventory_plugins  = /usr/share/ansible/plugins/inventory
+#vars_plugins       = /usr/share/ansible/plugins/vars
+#filter_plugins     = /usr/share/ansible/plugins/filter
+#test_plugins       = /usr/share/ansible/plugins/test
+#terminal_plugins   = /usr/share/ansible/plugins/terminal
+#strategy_plugins   = /usr/share/ansible/plugins/strategy
+
+
+# free , debug , linear 三种，
+# free  每个host按照task执行，不与其他host相关联，也就是说host会一直把自己的tasks执行完，再继续下一个host的，此种执行方式，会发现每次执行task时，显示的 却不一定是当前task的进程。
+# debug 类似pdb.strace() 如果有错误会直接进入调试模式
+# linear    线性的执行策略，所有hosts逐一task执行，每次并发5个，同步执行。
+strategy = linear
+
+# by default callbacks are not loaded for /bin/ansible, enable this if you
+# want, for example, a notification or logging callback to also apply to
+# /bin/ansible runs
+bin_ansible_callbacks = True
+
+
+# don&#39;t like cows?  that&#39;s unfortunate.
+# set to 1 if you don&#39;t want cowsay support or export ANSIBLE_NOCOWS=1
+#nocows = 1
+
+# set which cowsay stencil you&#39;d like to use by default. When set to &#39;random&#39;,
+# a random stencil will be selected for each task. The selection will be filtered
+# against the `cow_whitelist` option below.
+#cow_selection = default
+#cow_selection = random
+
+# when using the &#39;random&#39; option for cowsay, stencils will be restricted to this list.
+# it should be formatted as a comma-separated list with no spaces between names.
+# NOTE: line continuations here are for formatting purposes only, as the INI parser
+#       in python does not support them.
+#cow_whitelist=bud-frogs,bunny,cheese,daemon,default,dragon,elephant-in-snake,elephant,eyes,\
+#              hellokitty,kitty,luke-koala,meow,milk,moofasa,moose,ren,sheep,small,stegosaurus,\
+#              stimpy,supermilker,three-eyes,turkey,turtle,tux,udder,vader-koala,vader,www
+
+# don&#39;t like colors either?
+# set to 1 if you don&#39;t want colors, or export ANSIBLE_NOCOLOR=1
+#nocolor = 1
+
+# if set to a persistent type (not &#39;memory&#39;, for example &#39;redis&#39;) fact values
+# from previous runs in Ansible will be stored.  This may be useful when
+# wanting to use, for example, IP information from one group of servers
+# without having to talk to them in the same playbook run to get their
+# current IP information.
+#fact_caching = memory
+
+
+# retry files
+# When a playbook fails by default a .retry file will be created in ~/
+# You can disable this feature by setting retry_files_enabled to False
+# and you can change the location of the files by setting retry_files_save_path
+
+retry_files_enabled = False
+#retry_files_save_path = ~/.ansible-retry
+
+# squash actions
+# Ansible can optimise actions that call modules with list parameters
+# when looping. Instead of calling the module once per with_ item, the
+# module is called once with all items at once. Currently this only works
+# under limited circumstances, and only with parameters named &#39;name&#39;.
+#squash_actions = apk,apt,dnf,homebrew,pacman,pkgng,yum,zypper
+
+# prevents logging of task data, off by default
+#no_log = False
+
+# prevents logging of tasks, but only on the targets, data is still logged on the master/controller
+#　执行ansible的过程会在target node的/var/log/messages下写入执行过程，默认是写入的
+#　要不写入，取消注释，改成True
+no_target_syslog = True
+
+# controls whether Ansible will raise an error or warning if a task has no
+# choice but to create world readable temporary files to execute a module on
+# the remote machine.  This option is False by default for security.  Users may
+# turn this on to have behaviour more like Ansible prior to 2.1.x.  See
+# https://docs.ansible.com/ansible/become.html#becoming-an-unprivileged-user
+# for more secure ways to fix this than enabling this option.
+#allow_world_readable_tmpfiles = False
+
+# controls the compression level of variables sent to
+# worker processes. At the default of 0, no compression
+# is used. This value must be an integer from 0 to 9.
+#var_compression_level = 9
+
+# controls what compression method is used for new-style ansible modules when
+# they are sent to the remote system.  The compression types depend on having
+# support compiled into both the controller&#39;s python and the client&#39;s python.
+# The names should match with the python Zipfile compression types:
+# * ZIP_STORED (no compression. available everywhere)
+# * ZIP_DEFLATED (uses zlib, the default)
+# These values may be set per host via the ansible_module_compression inventory
+# variable
+#module_compression = &#39;ZIP_DEFLATED&#39;
+
+# This controls the cutoff point (in bytes) on --diff for files
+# set to 0 for unlimited (RAM may suffer!).
+#max_diff_size = 1048576
+
+# This controls how ansible handles multiple --tags and --skip-tags arguments
+# on the CLI.  If this is True then multiple arguments are merged together.  If
+# it is False, then the last specified argument is used and the others are ignored.
+# This option will be removed in 2.8.
+#merge_multiple_cli_flags = True
+
+# Controls showing custom stats at the end, off by default
+#show_custom_stats = True
+
+# Controls which files to ignore when using a directory as inventory with
+# possibly multiple sources (both static and dynamic)
+#inventory_ignore_extensions = ~, .orig, .bak, .ini, .cfg, .retry, .pyc, .pyo
+
+# This family of modules use an alternative execution path optimized for network appliances
+# only update this setting if you know how this works, otherwise it can break module execution
+#network_group_modules=[&#39;eos&#39;, &#39;nxos&#39;, &#39;ios&#39;, &#39;iosxr&#39;, &#39;junos&#39;, &#39;vyos&#39;]
+
+# When enabled, this option allows lookups (via variables like &#123;&#123;lookup('foo')&#125;&#125; or when used as
+# a loop with `with_foo`) to return data that is not marked &quot;unsafe&quot;. This means the data may contain
+# jinja2 templating language which will be run through the templating engine.
+# ENABLING THIS COULD BE A SECURITY RISK
+#allow_unsafe_lookups = False
+
+# 遇到任何错误就会终止执行，也可以在playbook中指定 any_errors_fatal: true
+any_errors_fatal = True
+
+[inventory]
+# enable inventory plugins, default: &#39;host_list&#39;, &#39;script&#39;, &#39;yaml&#39;, &#39;ini&#39;
+enable_plugins = advanced_host_list, host_list, virtualbox, yaml, constructed, script, ini
+
+# ignore these extensions when parsing a directory as inventory source
+#ignore_extensions = .pyc, .pyo, .swp, .bak, ~, .rpm, .md, .txt, ~, .orig, .ini, .cfg, .retry
+
+# ignore files matching these patterns when parsing a directory as inventory source
+#ignore_patterns=
+
+# If &#39;true&#39; unparsed inventory sources become fatal errors, they are warnings otherwise.
+#unparsed_is_failed=False
+
+[privilege_escalation]
+#become=True
+#become_method=sudo
+#become_user=root
+#become_ask_pass=False
+
+[paramiko_connection]
+# 默认用ssh方式，如果用python paramiko模块链接，才需要此段配置
+# uncomment this line to cause the paramiko connection plugin to not record new host
+# keys encountered.  Increases performance on new host additions.  Setting works independently of the
+# host key checking setting above.
+#record_host_keys=False
+
+# by default, Ansible requests a pseudo-terminal for commands executed under sudo. Uncomment this
+# line to disable this behaviour.
+#pty=False
+
+# paramiko will default to looking for SSH keys initially when trying to
+# authenticate to remote devices.  This is a problem for some network devices
+# that close the connection after a key failure.  Uncomment this line to
+# disable the Paramiko look for keys function
+#look_for_keys = False
+
+# When using persistent connections with Paramiko, the connection runs in a
+# background process.  If the host doesn&#39;t already have a valid SSH key, by
+# default Ansible will prompt to add the host key.  This will cause connections
+# running in background processes to fail.  Uncomment this line to have
+# Paramiko automatically add host keys.
+#host_key_auto_add = True
+
+[ssh_connection]
+
+# ssh arguments to use
+# Leaving off ControlPersist will result in poor performance, so use
+# paramiko on older platforms rather than removing it, -C controls compression use
+#ssh_args = -C -o ControlMaster=auto -o ControlPersist=60s
+
+# The base directory for the ControlPath sockets. 
+# This is the &quot;%(directory)s&quot; in the control_path option
+# 
+# Example: 
+# control_path_dir = /tmp/.ansible/cp
+#control_path_dir = ~/.ansible/cp
+
+# The path to use for the ControlPath sockets. This defaults to a hashed string of the hostname, 
+# port and username (empty string in the config). The hash mitigates a common problem users 
+# found with long hostames and the conventional %(directory)s/ansible-ssh-%%h-%%p-%%r format. 
+# In those cases, a &quot;too long for Unix domain socket&quot; ssh error would occur.
+#
+# Example:
+# control_path = %(directory)s/%%h-%%r
+#control_path =
+
+# Enabling pipelining reduces the number of SSH operations required to
+# execute a module on the remote server. This can result in a significant
+# performance improvement when enabled, however when using &quot;sudo:&quot; you must
+# first disable &#39;requiretty&#39; in /etc/sudoers
+#
+# By default, this option is disabled to preserve compatibility with
+# sudoers configurations that have requiretty (the default on many distros).
+#
+pipelining = True
+
+# Control the mechanism for transferring files (old)
+#   * smart = try sftp and then try scp [default]
+#   * True = use scp only
+#   * False = use sftp only
+#scp_if_ssh = smart
+
+# Control the mechanism for transferring files (new)
+# If set, this will override the scp_if_ssh option
+#   * sftp  = use sftp to transfer files
+#   * scp   = use scp to transfer files
+#   * piped = use &#39;dd&#39; over SSH to transfer files
+#   * smart = try sftp, scp, and piped, in that order [default]
+#transfer_method = smart
+
+# if False, sftp will not use batch mode to transfer files. This may cause some
+# types of file transfer failures impossible to catch however, and should
+# only be disabled if your sftp version has problems with batch mode
+#sftp_batch_mode = False
+
+[persistent_connection]
+
+# Configures the persistent connection timeout value in seconds.  This value is
+# how long the persistent connection will remain idle before it is destroyed.  
+# If the connection doesn&#39;t receive a request before the timeout value 
+# expires, the connection is shutdown. The default value is 30 seconds.
+connect_timeout = 30
+
+# Configures the persistent connection retry timeout.  This value configures the
+# the retry timeout that ansible-connection will wait to connect
+# to the local domain socket. This value must be larger than the
+# ssh timeout (timeout) and less than persistent connection idle timeout (connect_timeout).
+# The default value is 15 seconds.
+#connect_retry_timeout = 15
+
+# The command timeout value defines the amount of time to wait for a command
+# or RPC call before timing out. The value for the command timeout must
+# be less than the value of the persistent connection idle timeout (connect_timeout)
+# The default value is 10 second.
+#command_timeout = 10
+
+[accelerate]
+#accelerate_port = 5099
+#accelerate_timeout = 30
+#accelerate_connect_timeout = 5.0
+
+# The daemon timeout is measured in minutes. This time is measured
+# from the last activity to the accelerate daemon.
+#accelerate_daemon_timeout = 30
+
+# If set to yes, accelerate_multi_key will allow multiple
+# private keys to be uploaded to it, though each user must
+# have access to the system via SSH to add a new key. The default
+# is &quot;no&quot;.
+#accelerate_multi_key = yes
+
+[selinux]
+# file systems that require special treatment when dealing with security context
+# the default behaviour that copies the existing context or uses the user default
+# needs to be changed to use the file system dependent context.
+#special_context_filesystems=nfs,vboxsf,fuse,ramfs,9p
+
+# Set this to yes to allow libvirt_lxc connections to work without SELinux.
+#libvirt_lxc_noseclabel = yes
+
+[colors]
+#highlight = white
+#verbose = blue
+#warn = bright purple
+#error = red
+#debug = dark gray
+#deprecate = purple
+#skip = cyan
+#unreachable = red
+#ok = green
+#changed = yellow
+#diff_add = green
+#diff_remove = red
+#diff_lines = cyan
+
+
+[diff]
+# Always print diff when running ( same as always running with -D/--diff )
+# always = no
+
+# Set how many context lines to show in diff
+# context = 3
+
+</code></pre>
+<h3 id="2-2-hosts文件"><a href="#2-2-hosts文件" class="headerlink" title="2.2.hosts文件"></a>2.2.hosts文件</h3><pre><code class="sh">cat /etc/ansible/hosts 
+# This is the default ansible &#39;hosts&#39; file.
+#
+# It should live in /etc/ansible/hosts
+#
+#   - Comments begin with the &#39;#&#39; character
+#   - Blank lines are ignored
+#   - Groups of hosts are delimited by [header] elements
+#   - You can enter hostnames or ip addresses
+#   - A hostname/ip can be a member of multiple groups
+
+#配置主机的组
+[hexo] 
+192.168.181.131 ansible_ssh_user=wyatt ansible_ssh_pass=wc1900430 sname=hexo1 ansible_ssh_port=6500
+#最后配置主机的变量 
+
+#配置组变量
+[hexo:vars]
+https_port=8080
+server_name=wangc.store
+
+# Ex 1: Ungrouped hosts, specify before any group headers.
+
+## green.example.com
+## blue.example.com
+## 192.168.100.1
+## 192.168.100.10
+
+# Ex 2: A collection of hosts belonging to the &#39;webservers&#39; group
+
+## [webservers]
+## alpha.example.org
+## beta.example.org
+## 192.168.1.100
+## 192.168.1.110
+
+# If you have multiple hosts following a pattern you can specify
+# them like this:
+
+## www[001:006].example.com
+
+# Ex 3: A collection of database servers in the &#39;dbservers&#39; group
+
+## [dbservers]
+## 
+## db01.intranet.mydomain.net
+## db02.intranet.mydomain.net
+## 10.25.1.56
+## 10.25.1.57
+
+# Here&#39;s another example of host ranges, this time there are no
+# leading 0s:
+
+## db-[99:101]-node.example.com
+</code></pre>
+<h4 id="2-2-1-主机清单分组"><a href="#2-2-1-主机清单分组" class="headerlink" title="2.2.1.主机清单分组"></a>2.2.1.主机清单分组</h4><pre><code class="sh">[root@server01 ~]# cat ansible/hosts 
+[webserver]
+172.16.1.1
+[dbserver]
+172.16.10.1
+[lbserver]
+172.20.10.2
+[backup]
+172.16.20.4
+[server:children]
+webserver
+dbserver
+lbserver
+</code></pre>
+<h4 id="2-2-2-主机清单子组"><a href="#2-2-2-主机清单子组" class="headerlink" title="2.2.2.主机清单子组"></a>2.2.2.主机清单子组</h4><pre><code class="sh">[root@server01 ~]# cat ansible/hosts 
+[webserver]
+172.16.1.1
+[dbserver]
+172.16.10.1
+[lbserver]
+172.20.10.2
+[backup]
+172.16.20.4
+[server:children]
+webserver
+dbserver
+lbserver
+</code></pre>
+<h4 id="2-2-3-主机清单与密码"><a href="#2-2-3-主机清单与密码" class="headerlink" title="2.2.3.主机清单与密码"></a>2.2.3.主机清单与密码</h4><pre><code class="sh">[root@server01 ~]# cat ansible/hosts 
+[webserver]
+172.16.1.1 ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+[dbserver]
+172.16.10.1
+[lbserver]
+172.20.10.2
+[backup]
+172.16.20.4
+[server:children]
+webserver
+dbserver
+lbserver
+
+#设置参数，端口、用户、密码
+[webserver:vars]
+ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+[server]
+ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+[all:vars]
+ansible_ssh-port=22 ansible_ssh_user=wcn ansible_ssh_pass=&#39;123456&#39;
+</code></pre>
+<h3 id="2-3-组变量yml文件"><a href="#2-3-组变量yml文件" class="headerlink" title="2.3.组变量yml文件"></a>2.3.组变量yml文件</h3><p>存放位置为</p>
+<pre><code class="sh">/etc/ansible/group_vars/xxx.yml
+#此处创建hexo组的yml文件
+[wyatt@CentOS7 roles]$ ansible hexo -a &quot;echo &#123;&#123;port&#125;&#125;&quot;
+192.168.181.131 | CHANGED | rc=0 &gt;&gt;
+6500
+[wyatt@CentOS7 roles]$ cat /etc/ansible/group_vars/hexo.yml 
+domain: wangc.store
+port: 6500
+</code></pre>
+<h2 id="3-使用ansible"><a href="#3-使用ansible" class="headerlink" title="3.使用ansible"></a>3.使用ansible</h2><h3 id="3-1-向主机或主机组发送命令"><a href="#3-1-向主机或主机组发送命令" class="headerlink" title="3.1.向主机或主机组发送命令"></a>3.1.向主机或主机组发送命令</h3><pre><code class="sh">ansible $hostgroup -a &quot;commod&quot;
+ansible hexo -a &quot;df -lh&quot;
+#输入变量
+ansible hexo -a &quot;echo &#123;&#123;port&#125;&#125;&quot;
+</code></pre>
+<h3 id="3-2-ad-hoc"><a href="#3-2-ad-hoc" class="headerlink" title="3.2.ad-hoc"></a>3.2.ad-hoc</h3><pre><code class="sh">#-a 只能使用普通的命令，无法识别 | &gt;&gt; $$ 等特殊符号，需要使用 -m shell 模块
+[wyatt@CentOS7 roles]$ clear
+[wyatt@CentOS7 roles]$ ansible hexo -a &quot;echo 123 &gt;&gt; /tmp/123 &quot;
+192.168.181.131 | CHANGED | rc=0 &gt;&gt;
+123 &gt;&gt; /tmp/123
+[wyatt@CentOS7 roles]$ ansible hexo -a &quot;cat /tmp/123 &quot;
+192.168.181.131 | CHANGED | rc=0 &gt;&gt;
+
+[wyatt@CentOS7 roles]$ ansible hexo -m shell -a &quot;echo 123 &gt;&gt; /tmp/123 &quot;
+192.168.181.131 | CHANGED | rc=0 &gt;&gt;
+
+[wyatt@CentOS7 roles]$ ansible hexo -a &quot;cat /tmp/123 &quot;
+192.168.181.131 | CHANGED | rc=0 &gt;&gt;
+123
+[wyatt@CentOS7 roles]$ 
+</code></pre>
+<h3 id="3-3-显示将执行命令的主机"><a href="#3-3-显示将执行命令的主机" class="headerlink" title="3.3.显示将执行命令的主机"></a>3.3.显示将执行命令的主机</h3><pre><code class="sh">ansible hexo --list-hosts
+  hosts (1):
+    192.168.181.131
+</code></pre>
+<h3 id="3-4-显示详细的执行过程"><a href="#3-4-显示详细的执行过程" class="headerlink" title="3.4.显示详细的执行过程"></a>3.4.显示详细的执行过程</h3><p>-vvv参数</p>
+<pre><code class="sh">ansible hexo -vvv -a &quot;cat /tmp/123 &quot;
+</code></pre>
+<h2 id="4-ansible常用模块"><a href="#4-ansible常用模块" class="headerlink" title="4.ansible常用模块"></a>4.ansible常用模块</h2><h3 id="4-1-执行shell命令（command和shell）"><a href="#4-1-执行shell命令（command和shell）" class="headerlink" title="4.1.执行shell命令（command和shell）"></a>4.1.执行shell命令（command和shell）</h3><p>ansible进行sudo提权操作</p>
+<pre><code class="sh">--become #使用sudo
+--become-user=root #使用root权限
+--ask-become-pass  #提权的密码
+</code></pre>
+<h3 id="4-2-文件传输（copy和file）"><a href="#4-2-文件传输（copy和file）" class="headerlink" title="4.2.文件传输（copy和file）"></a>4.2.文件传输（copy和file）</h3><ul>
+<li>copy传输文件</li>
+</ul>
+<pre><code class="sh"> ~]$ ansible hexo -m copy -a &quot;src=/home/wyatt/docker-20.10.9.tgz dest=/opt&quot; --become --become-user=root --ask-become-pass
+BECOME password: 
+192.168.181.131 | CHANGED =&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;
+    &#125;, 
+    &quot;changed&quot;: true, 
+    &quot;checksum&quot;: &quot;01035ebd664d78fb43adfdddef2910747bbed5cf&quot;, 
+    &quot;dest&quot;: &quot;/opt/docker-20.10.9.tgz&quot;, 
+    &quot;gid&quot;: 0, 
+    &quot;group&quot;: &quot;root&quot;, 
+    &quot;md5sum&quot;: &quot;24babcf045085cd88d527025b8296fd5&quot;, 
+    &quot;mode&quot;: &quot;0644&quot;, 
+    &quot;owner&quot;: &quot;root&quot;, 
+    &quot;secontext&quot;: &quot;system_u:object_r:usr_t:s0&quot;, 
+    &quot;size&quot;: 63350495, 
+    &quot;src&quot;: &quot;/home/wyatt/.ansible/tmp/ansible-tmp-1641686431.36-2588-179573832270522/source&quot;, 
+    &quot;state&quot;: &quot;file&quot;, 
+    &quot;uid&quot;: 0
+&#125;
+</code></pre>
+<ul>
+<li>file创建文件</li>
+</ul>
+<pre><code class="sh">~]$ ansible hexo -m file -a &quot;dest=/home/wyatt/123 mode=600 state=touch&quot; 
+192.168.181.131 | CHANGED =&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;
+    &#125;, 
+    &quot;changed&quot;: true, 
+    &quot;dest&quot;: &quot;/home/wyatt/123&quot;, 
+    &quot;gid&quot;: 1000, 
+    &quot;group&quot;: &quot;wyatt&quot;, 
+    &quot;mode&quot;: &quot;0600&quot;, 
+    &quot;owner&quot;: &quot;wyatt&quot;, 
+    &quot;secontext&quot;: &quot;unconfined_u:object_r:user_home_t:s0&quot;, 
+    &quot;size&quot;: 0, 
+    &quot;state&quot;: &quot;file&quot;, 
+    &quot;uid&quot;: 1000
+&#125;
+
+~]$ ansible hexo -a &quot;ls -l&quot; 
+192.168.181.131 | CHANGED | rc=0 &gt;&gt;
+total 4
+-rw-------. 1 wyatt wyatt   0 Jan  9 08:08 123
+-rwxrwxr--. 1 wyatt wyatt 761 Jan  3 18:12 First.sh
+
+#mode指定权限
+#state指定类型：directory,link,hard,touch,absent
+#　　touch  ：创建文件
+#　　directory：创建目录
+#　　absent：删除文件或者目录或者链接文件
+#　　link：创建链接文件
+#   hard：创建硬连接
+</code></pre>
+<ul>
+<li>template 分发文件并解析变量</li>
+</ul>
+<h3 id="4-3-软件包管理（yum）"><a href="#4-3-软件包管理（yum）" class="headerlink" title="4.3.软件包管理（yum）"></a>4.3.软件包管理（yum）</h3><pre><code class="sh">~]$ ansible hexo -m yum -a &quot;name=net-tools state=present&quot; --become --become-user=root --ask-become-pass
+BECOME password: 
+192.168.181.131 | CHANGED =&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;
+    &#125;, 
+    &quot;changed&quot;: true, 
+    &quot;changes&quot;: &#123;
+        &quot;installed&quot;: [
+            &quot;net-tools&quot;
+        ]
+    &#125;, 
+    &quot;msg&quot;: &quot;&quot;, 
+    &quot;rc&quot;: 0, 
+    &quot;results&quot;: [
+        &quot;Loaded plugins: fastestmirror\nLoading mirror speeds from cached hostfile\nResolving Dependencies\n--&gt; Running transaction check\n---&gt; Package net-tools.x86_64 0:2.0-0.25.20131004git.el7 will be installed\n--&gt; Finished Dependency Resolution\n\nDependencies Resolved\n\n================================================================================\n Package         Arch         Version                          Repository  Size\n================================================================================\nInstalling:\n net-tools       x86_64       2.0-0.25.20131004git.el7         base       306 k\n\nTransaction Summary\n================================================================================\nInstall  1 Package\n\nTotal download size: 306 k\nInstalled size: 917 k\nDownloading packages:\nRunning transaction check\nRunning transaction test\nTransaction test succeeded\nRunning transaction\n  Installing : net-tools-2.0-0.25.20131004git.el7.x86_64                    1/1 \n  Verifying  : net-tools-2.0-0.25.20131004git.el7.x86_64                    1/1 \n\nInstalled:\n  net-tools.x86_64 0:2.0-0.25.20131004git.el7                                   \n\nComplete!\n&quot;
+    ]
+&#125;
+#使用-m yum来运行yum包管理器
+#name：指定包名
+#state：指定状态 absent, installed, latest, present, removed
+#absent：卸载
+#installd：安装
+#latest：安装
+#present：安装
+#removed：卸载
+</code></pre>
+<h3 id="4-4-用户和组（user）"><a href="#4-4-用户和组（user）" class="headerlink" title="4.4.用户和组（user）"></a>4.4.用户和组（user）</h3><pre><code class="sh">#创建用户
+ansible hexo -m user -a &quot;name=c password=123c&quot; -u root -k
+#删除用户和用户文件夹
+ansible hexo -m user -a &quot;name=c state=absent remove=yes&quot; -u root -k
+
+#常用参数
+#name：用户名
+#shell：指定用户的shell
+#state：absent删除，present：新增
+#remove：删除时是否删除用户根目录
+</code></pre>
+<h3 id="4-5-从源代码管理系统部署（git）"><a href="#4-5-从源代码管理系统部署（git）" class="headerlink" title="4.5.从源代码管理系统部署（git）"></a>4.5.从源代码管理系统部署（git）</h3><p>需要目标主机已经安装了git</p>
+<pre><code class="sh">ansible hexo -m yum -a &quot;name=git state=present&quot; -u root -k
+</code></pre>
+<p>从仓库拉取代码</p>
+<pre><code class="sh">ansible hexo -m git -a &quot;repo=http://101.37.173.91:6503/c/notes.git dist=/tmp/notes&quot;
+</code></pre>
+<h3 id="4-6-管理服务（service-systemd）"><a href="#4-6-管理服务（service-systemd）" class="headerlink" title="4.6.管理服务（service|systemd）"></a>4.6.管理服务（service|systemd）</h3><ul>
+<li>四个状态</li>
+</ul>
+<pre><code class="sh">reloaded, restarted, started, stopped
+</code></pre>
+<ul>
+<li>自动启管理</li>
+</ul>
+<pre><code class="sh">#参数enabled
+~]$ ansible hexo -m service -a &quot;name=firewalld enabled=true&quot; -u root -k
+~]$ ansible hexo -m service -a &quot;name=firewalld enabled=false&quot; -u root -k
+</code></pre>
+<ul>
+<li>停止一个服务</li>
+</ul>
+<pre><code class="sh">~]$ ansible hexo -m service -a &quot;name=firewalld state=stopped&quot; -u root -k
+</code></pre>
+<ul>
+<li>启动一个服务</li>
+</ul>
+<pre><code class="sh">~]$ ansible hexo -m service -a &quot;name=firewalld state=started&quot; -u root -k
+</code></pre>
+<h3 id="4-7-收集目标主机信息（setup）"><a href="#4-7-收集目标主机信息（setup）" class="headerlink" title="4.7.收集目标主机信息（setup）"></a>4.7.收集目标主机信息（setup）</h3><pre><code class="sh">#全部信息
+~]$ ansible hexo -m setup -u root -k
+#过滤信息-主机名
+~]$ ansible hexo -m setup -a &quot;filter=ansible_nodename&quot; -u root -k
+SSH password: 
+192.168.181.131 | SUCCESS =&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;ansible_nodename&quot;: &quot;c78s181-131.wangc.com&quot;, 
+        &quot;discovered_interpreter_python&quot;: &quot;/usr/bin/python&quot;
+    &#125;, 
+    &quot;changed&quot;: false
+&#125;
+</code></pre>
+<h3 id="4-8-挂载文件系统（mount）"><a href="#4-8-挂载文件系统（mount）" class="headerlink" title="4.8.挂载文件系统（mount）"></a>4.8.挂载文件系统（mount）</h3><pre><code class="sh"># fstype:指定文件系统
+# src：源地址
+# path：挂载点
+# state：
+# - absent：卸载并修改/etc/fstab
+# - unmounted：卸载而不修改/etc/fstab
+# - present：挂载，仅修改/etc/fstab 重启生效
+# - mounted：挂载并修改/etc/fstab
+# - remounted：重新挂载
+</code></pre>
+<h2 id="5-PlayBook"><a href="#5-PlayBook" class="headerlink" title="5.PlayBook"></a>5.PlayBook</h2><blockquote>
+<p>特点</p>
+</blockquote>
+<ul>
+<li>易读的编排语言-YAML</li>
+<li>适合配置管理和应用部署</li>
+<li>非常适合部署复杂的工作</li>
+</ul>
+<p>将操作集成为yaml文件，进行流程控制等</p>
+<h3 id="5-1-yaml语法检查"><a href="#5-1-yaml语法检查" class="headerlink" title="5.1.yaml语法检查"></a>5.1.yaml语法检查</h3><pre><code class="sh">~]$ ansible-playbook  example.yaml  --syntax-check
+
+playbook: example.yaml
+#语法无误则不会输入其他信息
+</code></pre>
+<h3 id="5-2-流程控制"><a href="#5-2-流程控制" class="headerlink" title="5.2.流程控制"></a>5.2.流程控制</h3><ul>
+<li>使用notify</li>
+</ul>
+<pre><code class="yaml">---
+- hosts: hexo
+  user: root
+  tasks:
+  - name: test
+    copy:
+      src: ./test.txt
+      dest: /tmp/test.txt
+    notify:
+      - remove 123
+
+  handlers:
+  - name: remove 123
+    file:
+      dest: /tmp/123
+      state: absent
+#使用notify:和 handlers:，如果前一个task没有变更，则不执行 handlers标记的task
+</code></pre>
+<ul>
+<li>使用tags</li>
+</ul>
+<pre><code class="shell"> ~]$ cat example.yaml 
+---
+- hosts: hexo
+  user: root
+  tasks:
+  - name: test
+    copy:
+      src: ./test.txt
+      dest: /tmp/test.txt
+    tags: copy file
+
+  - name: remove test
+    file:
+      dest: /tmp/test.123
+      state: absent
+    tags: remove file
+ #只执行remove file
+ ~]$ ansible-playbook  example.yaml --tags &quot;remove file&quot;
+ #跳过remove file
+  ~]$ ansible-playbook  example.yaml --skip-tags &quot;remove file&quot;
+</code></pre>
+<ul>
+<li>使用when</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  # vars:
+  #   file: ansible/vars
+  #   dir: /root
+  vars_files: /root/ansible/vars
+  tasks:
+    - name: print_vars
+      debug:
+        msg: &quot;&#123;&#123; dir &#125;&#125;变量&#123;&#123; file &#125;&#125;&quot;
+    - when: (ansible_nodename == &#39;server02&#39;) #精确匹配
+    # - when: (ansible_nodename is match(&#39;server02|server03&#39;)) # 包含，match支持正则表达式  
+</code></pre>
+<ul>
+<li>使用with_items</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  gather_facts: false
+  tasks:
+    - name: restart services
+      systemd: 
+        name: &quot;&#123;&#123; item &#125;&#125;&quot;
+        state: restarted
+      with_items:
+        - nginx
+        - php-fpm
+        - httpd
+</code></pre>
+<h3 id="5-3-ansible中的变量"><a href="#5-3-ansible中的变量" class="headerlink" title="5.3.ansible中的变量"></a>5.3.ansible中的变量</h3><ul>
+<li>引入变量文件</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  # vars:
+  #   file: ansible/vars
+  #   dir: /root
+  vars_files: /root/ansible/vars
+  tasks:
+    - name: print_vars
+      debug:
+        msg: &quot;&#123;&#123; dir &#125;&#125;变量&#123;&#123; file &#125;&#125;&quot;
+</code></pre>
+<pre><code class="sh"># 根据主机清单自动识别变量
+group_vars/
+  - lbserver/vars.yaml
+  - webserver/vars.yaml
+  - dbserver/vars.yaml
+  - all/vars.yaml
+</code></pre>
+<pre><code class="yaml"># 变量文件
+port: 8080
+port: 80
+</code></pre>
+<ul>
+<li>ansible内置变量facts</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  # gather_facts: false 关闭内置变量
+  tasks:
+    - name: print_facts
+      debug:
+        msg: &quot;&#123;&#123; ansible_nodename &#125;&#125;&quot;
+</code></pre>
+<ul>
+<li>register注册变量</li>
+</ul>
+<pre><code class="yaml">- hosts: server
+  tasks:
+    - name: get date
+      command: date &#39;+%F %T&#39;
+      register: time
+    - name: print time
+      debug:
+        msg: &quot;&#123;&#123; time.stdout &#125;&#125;&quot;
+</code></pre>
+<h3 id="5-4-debug"><a href="#5-4-debug" class="headerlink" title="5.4.debug"></a>5.4.debug</h3><pre><code class="yaml">---
+- hosts: hexo
+  user: root
+  vars:
+    name: wc
+    age: 24
+  tasks:
+  - name: test
+    copy:
+      src: ./test.txt
+      dest: /tmp/test.txt
+    tags: copy file
+
+  - name: remove test
+    file:
+      dest: /tmp/test.123
+      state: absent
+    tags: remove file
+  - name: echo msg
+    debug:
+      msg: &#123;&#123;name&#125;&#125;
+    tags: debug
+</code></pre>
+<pre><code class="sh">ansible-playbook  example.yaml --tags=debug
+</code></pre>
+<h2 id="6-ansible命令参数"><a href="#6-ansible命令参数" class="headerlink" title="6.ansible命令参数"></a>6.ansible命令参数</h2><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-i</td>
+<td>inventory list 指定主机清单</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>module 指定模块</td>
+</tr>
+<tr>
+<td>-a</td>
+<td>action 指定动作（一般是模块中选项参数，命令）</td>
+</tr>
+</tbody></table>
+<h2 id="7-使用role拆分ansible-playbook"><a href="#7-使用role拆分ansible-playbook" class="headerlink" title="7.使用role拆分ansible-playbook"></a>7.使用role拆分ansible-playbook</h2><pre><code class="sh">[root@server01 ansible]# tree 
+.
+├── group_vars
+│   ├── all
+│   │   └── vars.yaml
+│   └── server
+│       └── vars.yaml
+├── inventory
+│   └── hosts
+├── main.yaml
+└── roles
+    ├── basic
+    │   ├── files
+    │   ├── handlers
+    │   ├── tasks
+    │   └── templates
+    │       └── template.j2
+    ├── db
+    │   ├── files
+    │   ├── handlers
+    │   ├── tasks
+    │   └── templates
+    ├── lb
+    │   ├── files
+    │   ├── handlers
+    │   ├── tasks
+    │   └── templates
+    └── server
+        ├── files
+        ├── handlers
+        ├── tasks
+        └── templates
+</code></pre>
+<pre><code class="yaml">- hosts: all
+  roles:
+    -role: basic
+
+- hosts: web
+  roles:
+    - role: web
+    - role: install
+</code></pre>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/ansible/">ansible</a></div></article><div class="article-copyright"><p>标题: <a href="/2023/02/10/ansible%E5%85%A5%E9%97%A8/">ansible入门</a></p><p> 链接: <a href="/2023/02/10/ansible%E5%85%A5%E9%97%A8/">http://cwang110.github.io/2023/02/10/ansible%E5%85%A5%E9%97%A8/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2023/02/04/mysql%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/"
+  style="background-image:url(/assets/images/random/20.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>mysql常见数据类型</p>
+  </div>
+</a>
+<a class="page_down" href="/2023/02/10/lvm%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/"
+style="background-image:url(/assets/images/random/6.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>lvm逻辑卷管理</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ansible%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4"><span class="toc-number">1.</span> <span class="toc-text">ansible自动化运维</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%89%E8%A3%85ansible"><span class="toc-number">1.1.</span> <span class="toc-text">1.安装ansible</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ansible%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">2.ansible配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BB%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1.主配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-hosts%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2.hosts文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E4%B8%BB%E6%9C%BA%E6%B8%85%E5%8D%95%E5%88%86%E7%BB%84"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">2.2.1.主机清单分组</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E4%B8%BB%E6%9C%BA%E6%B8%85%E5%8D%95%E5%AD%90%E7%BB%84"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">2.2.2.主机清单子组</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E4%B8%BB%E6%9C%BA%E6%B8%85%E5%8D%95%E4%B8%8E%E5%AF%86%E7%A0%81"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">2.2.3.主机清单与密码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%BB%84%E5%8F%98%E9%87%8Fyml%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.3.组变量yml文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BD%BF%E7%94%A8ansible"><span class="toc-number">1.3.</span> <span class="toc-text">3.使用ansible</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%90%91%E4%B8%BB%E6%9C%BA%E6%88%96%E4%B8%BB%E6%9C%BA%E7%BB%84%E5%8F%91%E9%80%81%E5%91%BD%E4%BB%A4"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1.向主机或主机组发送命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-ad-hoc"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2.ad-hoc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%98%BE%E7%A4%BA%E5%B0%86%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E7%9A%84%E4%B8%BB%E6%9C%BA"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3.显示将执行命令的主机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%98%BE%E7%A4%BA%E8%AF%A6%E7%BB%86%E7%9A%84%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4.显示详细的执行过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-ansible%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97"><span class="toc-number">1.4.</span> <span class="toc-text">4.ansible常用模块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%89%A7%E8%A1%8Cshell%E5%91%BD%E4%BB%A4%EF%BC%88command%E5%92%8Cshell%EF%BC%89"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1.执行shell命令（command和shell）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93%EF%BC%88copy%E5%92%8Cfile%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2.文件传输（copy和file）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86%EF%BC%88yum%EF%BC%89"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3.软件包管理（yum）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%EF%BC%88user%EF%BC%89"><span class="toc-number">1.4.4.</span> <span class="toc-text">4.4.用户和组（user）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E4%BB%8E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E9%83%A8%E7%BD%B2%EF%BC%88git%EF%BC%89"><span class="toc-number">1.4.5.</span> <span class="toc-text">4.5.从源代码管理系统部署（git）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1%EF%BC%88service-systemd%EF%BC%89"><span class="toc-number">1.4.6.</span> <span class="toc-text">4.6.管理服务（service|systemd）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-%E6%94%B6%E9%9B%86%E7%9B%AE%E6%A0%87%E4%B8%BB%E6%9C%BA%E4%BF%A1%E6%81%AF%EF%BC%88setup%EF%BC%89"><span class="toc-number">1.4.7.</span> <span class="toc-text">4.7.收集目标主机信息（setup）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-8-%E6%8C%82%E8%BD%BD%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%EF%BC%88mount%EF%BC%89"><span class="toc-number">1.4.8.</span> <span class="toc-text">4.8.挂载文件系统（mount）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-PlayBook"><span class="toc-number">1.5.</span> <span class="toc-text">5.PlayBook</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-yaml%E8%AF%AD%E6%B3%95%E6%A3%80%E6%9F%A5"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1.yaml语法检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2.流程控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-ansible%E4%B8%AD%E7%9A%84%E5%8F%98%E9%87%8F"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3.ansible中的变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-debug"><span class="toc-number">1.5.4.</span> <span class="toc-text">5.4.debug</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-ansible%E5%91%BD%E4%BB%A4%E5%8F%82%E6%95%B0"><span class="toc-number">1.6.</span> <span class="toc-text">6.ansible命令参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E4%BD%BF%E7%94%A8role%E6%8B%86%E5%88%86ansible-playbook"><span class="toc-number">1.7.</span> <span class="toc-text">7.使用role拆分ansible-playbook</span></a></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

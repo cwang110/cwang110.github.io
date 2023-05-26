@@ -1,0 +1,107 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>014-Go语言字符串 | Rindemon</title><meta name="keywords" content="Golang"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">014-Go语言字符串</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="014-Go语言字符串"><a href="#014-Go语言字符串" class="headerlink" title="014-Go语言字符串"></a>014-Go语言字符串</h1><p>一个字符串是一个不可改变的字节序列，字符串可以包含任意的数据，但是通常是用来包含可读的文本，字符串是 UTF-8 字符的一个序列（当字符为 ASCII 码表上的字符时则占用 1 个字节，其它字符根据需要占用 2-4 个字节）。</p>
+<p>UTF-8 是一种被广泛使用的编码格式，是文本文件的标准编码，其中包括 XML 和 JSON 在内也都使用该编码。由于该编码对占用字节长度的不定性，在Go语言中字符串也可能根据需要占用 1 至 4 个字节，这与其它编程语言如 C++、Java 或者 Python 不同（Java 始终使用 2 个字节）。Go语言这样做不仅减少了内存和硬盘空间占用，同时也不用像其它语言那样需要对使用 UTF-8 字符集的文本进行编码和解码。</p>
+<p>字符串是一种值类型，且值不可变，即创建某个文本后将无法再次修改这个文本的内容，更深入地讲，字符串是字节的定长数组。</p>
+<h2 id="1-定义字符串"><a href="#1-定义字符串" class="headerlink" title="1.定义字符串"></a>1.定义字符串</h2><p>可以使用双引号””来定义字符串，字符串中可以使用转义字符来实现换行、缩进等效果，常用的转义字符包括：</p>
+<ul>
+<li>\n：换行符</li>
+<li>\r：回车符</li>
+<li>\t：tab 键</li>
+<li>\u 或 \U：Unicode 字符</li>
+<li>\：反斜杠自身</li>
+</ul>
+<pre><code class="go">package main
+import (
+    &quot;fmt&quot;
+)
+func main() &#123;
+    var str = &quot;wcn\nGo语言成长之路&quot;
+    fmt.Println(str)
+&#125;
+
+//输出结果为
+wcn
+Go语言成长之路
+</code></pre>
+<p>一般的比较运算符（&#x3D;&#x3D;、!&#x3D;、&lt;、&lt;&#x3D;、&gt;&#x3D;、&gt;）是通过在内存中按字节比较来实现字符串比较的，因此比较的结果是字符串自然编码的顺序。字符串所占的字节长度可以通过函数 len() 来获取，例如 len(str)。</p>
+<p>字符串的内容（纯字节）可以通过标准索引法来获取，在方括号[ ]内写入索引，索引从 0 开始计数：</p>
+<ul>
+<li>字符串 str 的第 1 个字节：str[0]</li>
+<li>第 i 个字节：str[i - 1]</li>
+<li>最后 1 个字节：str[len(str)-1]</li>
+</ul>
+<p>需要注意的是，这种转换方案只对纯 ASCII 码的字符串有效。</p>
+<blockquote>
+<p>注意：获取字符串中某个字节的地址属于非法行为，例如 &amp;str[i]。</p>
+</blockquote>
+<h2 id="2-字符串拼接符“-”"><a href="#2-字符串拼接符“-”" class="headerlink" title="2.字符串拼接符“+”"></a>2.字符串拼接符“+”</h2><p>两个字符串 s1 和 s2 可以通过 s :&#x3D; s1 + s2 拼接在一起。将 s2 追加到 s1 尾部并生成一个新的字符串 s。</p>
+<p>可以通过下面的方式来对代码中多行的字符串进行拼接：</p>
+<pre><code class="go">str := &quot;Beginning of the string &quot; +
+&quot;second part of the string&quot;
+</code></pre>
+<blockquote>
+<p>提示：因为编译器会在行尾自动补全分号，所以拼接字符串用的加号“+”必须放在第一行末尾</p>
+</blockquote>
+<p>也可以使用“+&#x3D;”来对字符串进行拼接：</p>
+<pre><code class="go">s := &quot;hel&quot; + &quot;lo,&quot;
+s += &quot;world!&quot;
+fmt.Println(s) //输出 “hello, world!”
+</code></pre>
+<h2 id="3-字符串实现基于-UTF-8-编码"><a href="#3-字符串实现基于-UTF-8-编码" class="headerlink" title="3.字符串实现基于 UTF-8 编码"></a>3.字符串实现基于 UTF-8 编码</h2><p>Go语言中字符串的内部实现使用 UTF-8 编码，通过 rune 类型，可以方便地对每个 UTF-8 字符进行访问。当然，Go语言也支持按照传统的 ASCII 码方式逐字符进行访问。</p>
+<p>关于字符串的 UTF-8 字符访问的详细方法，后面的章节将会详细介绍。</p>
+<h2 id="4-定义多行字符串"><a href="#4-定义多行字符串" class="headerlink" title="4.定义多行字符串"></a>4.定义多行字符串</h2><p>在Go语言中，使用双引号书写字符串的方式是字符串常见表达方式之一，被称为字符串字面量（string literal），这种双引号字面量不能跨行，如果想要在源码中嵌入一个多行字符串时，就必须使用&#96;反引号，代码如下：</p>
+<pre><code class="go">const str = `第一行
+第二行
+第三行
+\r\n
+`
+fmt.Println(str)
+//输出结果
+第一行
+第二行
+第三行
+\r\n
+</code></pre>
+<p>两个反引号间的字符串将被原样赋值到 str 变量中。</p>
+<p>在这种方式下，反引号间换行将被作为字符串中的换行，但是所有的转义字符均无效，文本将会原样输出。</p>
+<p>多行字符串一般用于内嵌源码和内嵌数据等，代码如下：</p>
+<pre><code class="go">const codeTemplate = `// Generated by github.com/davyxu/cellnet/
+protoc-gen-msg
+// DO NOT EDIT!&#123;&#123;range .Protos&#125;&#125;
+// Source: &#123;&#123;.Name&#125;&#125;&#123;&#123;end&#125;&#125;
+
+package &#123;&#123;.PackageName&#125;&#125;
+
+&#123;&#123;if gt .TotalMessages 0&#125;&#125;
+import (
+    &quot;github.com/davyxu/cellnet&quot;
+    &quot;reflect&quot;
+    _ &quot;github.com/davyxu/cellnet/codec/pb&quot;
+)
+&#123;&#123;end&#125;&#125;
+
+func init() &#123;
+    &#123;&#123;range .Protos&#125;&#125;
+    // &#123;&#123;.Name&#125;&#125;&#123;&#123;range .Messages&#125;&#125;
+    cellnet.RegisterMessageMeta(&quot;pb&quot;,&quot;&#123;&#123;.FullName&#125;&#125;&quot;, reflect.TypeOf((*&#123;&#123;.Name&#125;&#125;)(nil)).Elem(), &#123;&#123;.MsgID&#125;&#125;)    &#123;&#123;end&#125;&#125;
+    &#123;&#123;end&#125;&#125;
+&#125;
+`
+</code></pre>
+<p>这段代码只定义了一个常量 codeTemplate，类型为字符串，使用&#96;定义，字符串的内容为一段代码生成中使用到的 Go 源码格式。</p>
+<p>在反引号中的所有代码均不会被编译器识别，而只是作为字符串的一部分。</p>
+<blockquote>
+<p>搬运于<a target="_blank" rel="noopener" href="http://c.biancheng.net/">C语言中文网</a></p>
+</blockquote>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/Golang/">Golang</a></div></article><div class="article-copyright"><p>标题: <a href="/2022/12/25/014-Go%E8%AF%AD%E8%A8%80%E5%AD%97%E7%AC%A6%E4%B8%B2/">014-Go语言字符串</a></p><p> 链接: <a href="/2022/12/25/014-Go%E8%AF%AD%E8%A8%80%E5%AD%97%E7%AC%A6%E4%B8%B2/">http://cwang110.github.io/2022/12/25/014-Go%E8%AF%AD%E8%A8%80%E5%AD%97%E7%AC%A6%E4%B8%B2/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2022/12/25/015-Go%E8%AF%AD%E8%A8%80%E5%AD%97%E7%AC%A6%E7%B1%BB%E5%9E%8B%EF%BC%88byte%E5%92%8Crune%EF%BC%89/"
+  style="background-image:url(/assets/images/random/15.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>015-Go语言字符类型（byte和rune）</p>
+  </div>
+</a>
+<a class="page_down" href="/2022/12/25/013-Go%E8%AF%AD%E8%A8%80%E7%9A%84bool%E8%BF%90%E7%AE%97/"
+style="background-image:url(/assets/images/random/30.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>013-Go语言的bool运算</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#014-Go%E8%AF%AD%E8%A8%80%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.</span> <span class="toc-text">014-Go语言字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AE%9A%E4%B9%89%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.1.</span> <span class="toc-text">1.定义字符串</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8B%BC%E6%8E%A5%E7%AC%A6%E2%80%9C-%E2%80%9D"><span class="toc-number">1.2.</span> <span class="toc-text">2.字符串拼接符“+”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%AE%9E%E7%8E%B0%E5%9F%BA%E4%BA%8E-UTF-8-%E7%BC%96%E7%A0%81"><span class="toc-number">1.3.</span> <span class="toc-text">3.字符串实现基于 UTF-8 编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%AE%9A%E4%B9%89%E5%A4%9A%E8%A1%8C%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.4.</span> <span class="toc-text">4.定义多行字符串</span></a></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

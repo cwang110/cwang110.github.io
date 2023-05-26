@@ -1,0 +1,338 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>Vim快捷键 | Rindemon</title><meta name="keywords" content="Vim"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">Vim快捷键</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/Vim/">Vim</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="vim-使用"><a href="#vim-使用" class="headerlink" title="vim 使用"></a>vim 使用</h1><h2 id="新建并编辑文件"><a href="#新建并编辑文件" class="headerlink" title="新建并编辑文件"></a>新建并编辑文件</h2><ul>
+<li><p>vim a.txt</p>
+</li>
+<li><p><code>:q</code> 退出编辑，将不能创建文件</p>
+<ul>
+<li><code>:q!</code> 强制退出编辑，当文档被编辑，键入:q 时，会出错<code>E37: No write since last change (add ! to override)</code>，如果要强制退出，则要用<code>:q!</code></li>
+</ul>
+</li>
+<li><p><code>:w</code> 保存文档</p>
+<ul>
+<li><code>:w 文件名</code> 文档另存为，例如此时编辑的是 a.txt，当<code>:w b.txt</code>时，将另存为 b.txt</li>
+<li><code>:w!</code> 若文档属性为<code>只读</code>时，<code>强制写入</code>该文档。不过，到底能不能写入，还是跟你对该文档的文档权限有关啊！</li>
+<li><code>:u</code> 尽量使用<code>:u</code>替代<code>:w</code>，原因是后者不论是否文档有改变，都会更新文档，而前者会判断文件是否更改，例如:w始终会更新修改时间，而:u则不总是这样。</li>
+</ul>
+</li>
+<li><p><code>:wq</code> 保存并退出</p>
+<ul>
+<li><code>:wq!</code> 保存并退出强制</li>
+</ul>
+</li>
+<li><p><code>:ZZ</code> 保存并退出强制</p>
+</li>
+<li><p><code>:!命令</code> 在编辑文档的时候，执行其它的命令，暂时离开 vi 到指令行模式下执行 命令 的显示结果！例如<br><code>:! ls /home</code>即可在 vi 当中察看 &#x2F;home 底下以 ls 输出的档案信息！</p>
+</li>
+<li><p><code>:r 文件名</code> 在编辑文档的时候，读入另一个文档的数据到该文档。读入的文档将在新行中。例如:r a.txt，相当于复制黏贴</p>
+</li>
+<li><p><code>:n1, n2 w 文件名</code> 将 n1 到 n2 的内容储存成 文件名中。例如<code>:1,3 w 13.txt</code> 就是将第 1 行到第 3 行的内容另存到 13.txt 文件中</p>
+</li>
+</ul>
+<h2 id="复制-粘贴-撤销-删除-全选"><a href="#复制-粘贴-撤销-删除-全选" class="headerlink" title="复制 粘贴 撤销 删除 全选"></a>复制 粘贴 撤销 删除 全选</h2><ul>
+<li><p>s 删除光标处的一个字符，并进入编辑模式</p>
+</li>
+<li><p>x 向后删除一个字符</p>
+<ul>
+<li>X 向前删除一个字符</li>
+</ul>
+</li>
+<li><p>dd 删除当前光标整行内容</p>
+<ul>
+<li>ndd 向下删除 n 个整行 例如：5dd 就是向下删除 5 行内容</li>
+</ul>
+</li>
+<li><p>dG 删除光标行到最后一行的数据</p>
+</li>
+<li><p>d1G 删除光标行到第一行的数据</p>
+</li>
+<li><p>D 删除当前行光标后的所有内容</p>
+</li>
+<li><p>d$ 同D 删除本行光标后的所有内容，例如有12345，光标在3上闪烁，此时键入d$时，45 将被删除，留下 123</p>
+</li>
+<li><p>d0 删除本行当前光标前的内容，例如有 12345，光标在 3 上闪烁，此时键入 d0 时，12 将被删除，留下 345</p>
+</li>
+<li><p>dw 表示删除从当前光标到光标所在单词结尾的内容</p>
+</li>
+<li><p>ggdG 全部删除</p>
+</li>
+<li><p>复制</p>
+<ul>
+<li>yy 复制光标所在的行数据</li>
+<li>Y 同 yy</li>
+<li>nyy 向下复制 n 行数据，例如 5yy 表示向下复制 5 行数据</li>
+<li>yl 复制 1 个字母<ul>
+<li>y3l 复制 3 个字母</li>
+</ul>
+</li>
+<li>y3w 复制 3 个单词</li>
+<li>y2j 向下复制 3 行</li>
+<li>y0 复制光标到行首的内容</li>
+<li><code>y$</code> 复制光标到行尾的内容</li>
+<li>yG 从光标所在行开始复制，直到文档最后一行</li>
+<li>y1G 从光标所在行开始复制，直到文档第一行</li>
+<li>yw 表示拷贝从当前光标到光标所在单词结尾的内容</li>
+<li>vy 复制选中的字符 方法：按住 shift，使用方向键选中指定字符，然后按 v，再按 y 就可以完成复制。</li>
+<li>n1,n2 y 复制指定行 进入命令行模式，输入<code>:1,3 y</code> 表示复制 1 到 3 行内容</li>
+<li>n1, y 复制指定行，进入命令行模式，输入<code>:1 y</code> 表示复制 1 到光标行的内容</li>
+<li>,n1 y 复制光标所在行到 n1 的内容，输入<code>:,5 y</code> 表示复制当前光标行到第 5 行的内容</li>
+<li>ggyG 全部复制</li>
+<li>复制当前屏幕内容：<ul>
+<li>HvL$y   -&gt; H 当前屏幕第一行， L 当前屏幕最后一行， M 当前屏幕中间行。</li>
+<li>HVLy    -&gt; H将光标移动到第一行，V【行，v非行】进入可以看见（可视）选择模式，L将光标移动到最后一行，y复制</li>
+</ul>
+</li>
+<li>复制并粘贴<ul>
+<li>.,copy 7，将光标所在的当前行复制到第 7 行</li>
+<li>2,5 copy 0 将第 2 到 5 行复制到第 1 行</li>
+</ul>
+</li>
+<li>移动<ul>
+<li>2,5 move 0 将第 2 到 5 行移动到第 1 行</li>
+</ul>
+</li>
+<li>“+yy 复制当前行到系统剪贴板，后可以通过ctrl + v 来把内容黏贴到其它文本框中</li>
+</ul>
+</li>
+<li><p>粘贴</p>
+<ul>
+<li>p 在光标的下一行粘贴通过 yy 复制的内容</li>
+<li>P 在光标的上一行粘贴通过 yy 复制的内容</li>
+<li>“+p 粘贴系统剪贴板（ctrl + c）的内容到vim中</li>
+</ul>
+</li>
+<li><p>u 复原前一个动作</p>
+</li>
+<li><p>J 和下一行合并为一行</p>
+</li>
+<li><p>. 重复上一个动作1次</p>
+</li>
+<li><p>n.重复上一个动作n次</p>
+</li>
+<li><p>剪切</p>
+<ul>
+<li>cw 删除（剪切）一个单词，并进入编辑模式</li>
+<li>cc 删除（剪切）当前行，并进入编辑模式</li>
+<li>c3j 向下删除（剪切）本行和下面 3 行，并进入编辑模式</li>
+</ul>
+</li>
+<li><p>w 移动光标到下一个单词的开头</p>
+</li>
+<li><p>e 移动光标到下一个单词的结尾</p>
+</li>
+<li><p>b 移动光标到上一个单词的开头</p>
+</li>
+<li><p>0 移动光标到本行的开头</p>
+</li>
+<li><p>$ 移动光标到本行的结尾</p>
+</li>
+<li><p>^ 移动光标到本行最开头非blank的字符</p>
+</li>
+<li><p>g_ 移动光标到本行最后非blank的字符</p>
+</li>
+<li><p>全选</p>
+<ul>
+<li>ggvG$</li>
+<li>ggVG</li>
+</ul>
+</li>
+</ul>
+<h2 id="i-o-a-r"><a href="#i-o-a-r" class="headerlink" title="i o a r"></a>i o a r</h2><ul>
+<li><p><code>i</code> 在当前光标的前面处进入编辑模式，比如有 12345，光标在 3 上闪烁，此时键入 i 时，将在 3 的前面进入编辑模式</p>
+<ul>
+<li><code>I</code> 在光标所在行的第一个位置插入光标，进入编辑模式。</li>
+</ul>
+</li>
+<li><p><code>o</code> 在当前光标的下一行进入编辑模式</p>
+<ul>
+<li><code>O</code> 在当前光标的上一行进入编辑模式</li>
+</ul>
+</li>
+<li><p><code>a</code> 在当前光标的后面处进入编辑模式，比如有 12345，光标在 3 上闪烁，此时键入 a 时，将在 3 的后面进入编辑模式</p>
+<ul>
+<li><code>A</code> 在光标所在行的最后一个位置插入光标，进入编辑模式。</li>
+</ul>
+</li>
+<li><p><code>r</code> 进入<code>替换</code>模式，比如有 1234，光标在 3 上闪烁，此时键入 r 时，就进入了替换模式，再输入一个字符例如 9，那么就变成了 12945 了，再输入 r，再输入 3，就变成了 12345，这只能替换一个字符。</p>
+<ul>
+<li><code>R</code> 进入<code>连续</code>替换模式，比如有 1234，光标在 2 上闪烁，此时键入 R 时，就进入了连续替换模式，此时键入 abc，那么原来的字符就变成了 1abc。直到按 esc 为止。</li>
+</ul>
+</li>
+</ul>
+<h2 id="h-j-k-l"><a href="#h-j-k-l" class="headerlink" title="h j k l"></a>h j k l</h2><ul>
+<li>h 光标向左 👈 移动一位</li>
+<li>j 光标向下 ⬇️ 移动一位</li>
+<li>k 光标向上 ⬆️ 移动一位</li>
+<li>l 光标向右 👉 移动一位</li>
+</ul>
+<h2 id="J"><a href="#J" class="headerlink" title="J"></a>J</h2><pre><code class="sh">aaa
+bbb
+ccc
+</code></pre>
+<h2 id="f"><a href="#f" class="headerlink" title="f"></a>f</h2><p>fx 向前查找x，Fx 向后查找x</p>
+<ul>
+<li>J 和下面行合并为一行，最终结果为 aaa bbb ccc 有空格分隔</li>
+<li>g J 和下面行合并为一行，无空格，最终结果为 aaabbbccc 没有空格</li>
+<li>g J 向下n行合并为一行，无空格</li>
+</ul>
+<h2 id="0-和-和"><a href="#0-和-和" class="headerlink" title="0 和 ^ 和 $"></a><code>0</code> 和 <code>^</code> 和 <code>$</code></h2><ul>
+<li>0 光标回到所在行的<code>第一位</code></li>
+<li>^ 光标回到所在行的第一个词首</li>
+<li><code>$</code> 光标回到所在行的<code>最后一位</code></li>
+<li>:1 到第一行</li>
+<li>:0 到第一行</li>
+<li>:500 到第500行</li>
+</ul>
+<h2 id="G-和-gg"><a href="#G-和-gg" class="headerlink" title="G 和 gg"></a>G 和 gg</h2><ul>
+<li>G 光标移动到文档的<code>最后一行</code>第一位</li>
+<li>gg 光标移动到文档的<code>第一行</code>第一位</li>
+<li>nG 回到 n 行，<code>1G</code>功能和<code>gg</code>一样都是回到第一行，<code>5G</code>的意思是跳转到第 5 行</li>
+</ul>
+<h2 id="H-M-L"><a href="#H-M-L" class="headerlink" title="H M L"></a>H M L</h2><ul>
+<li>H 回到该屏幕的第一行</li>
+<li>M 回到该屏幕的中间一行</li>
+<li>L 回到该屏幕的最后一行</li>
+</ul>
+<h2 id="数字"><a href="#数字" class="headerlink" title="数字"></a>数字</h2><h3 id="数字-空格"><a href="#数字-空格" class="headerlink" title="数字 空格"></a>数字 空格</h3><p>输入数字 5，再按空格，光标可向右移动 5 个光标</p>
+<h3 id="数字-回车"><a href="#数字-回车" class="headerlink" title="数字 回车"></a>数字 回车</h3><p>输入数字 5，再按回车，光标可向下移动 5 行</p>
+<h2 id="TAB"><a href="#TAB" class="headerlink" title="TAB"></a>TAB</h2><ul>
+<li><code>&lt;&lt;</code> 输入此命令则光标所在行向左移动一个 tab.</li>
+<li><code>&gt;&gt;</code> 输入此命令则光标所在行向右移动一个 tab.</li>
+<li><code>:12,24&gt;</code> 此命令将 12 行到 14 行的数据都向右移动一个 tab.</li>
+<li><code>:12,24&gt;&gt;</code> 此命令将 12 行到 14 行的数据都向右移动两个 tab.</li>
+</ul>
+<h2 id="大小写转换"><a href="#大小写转换" class="headerlink" title="大小写转换"></a>大小写转换</h2><p>LOWERCASE</p>
+<ul>
+<li>~ 将光标下的字母改变大小写，大写改小写，小写改大写</li>
+<li>3~ 将光标位置开始的 3 个字母改变其大小写</li>
+<li>g~~ 改变当前行字母的大小写</li>
+<li>U 将可视模式下选择的字母全改成大写字母 先按 v 选中指定的字符，再按 U，即可将选中的字符改为大写</li>
+<li>u 将可视模式下选择的字母全改成小写字母 先按 v 选中指定的字符，再按 u，即可将选中的字符改为小写</li>
+<li>gUU 将当前行的字母改成大写</li>
+<li>2gUU 将当前行和下一行的字母改成大写</li>
+<li>guu 将当前行的字母全改成小写</li>
+<li>guw gue 将光标下的单词改成小写</li>
+<li>gUw 将光标下的单词改成大写</li>
+<li>gu0 将光标处到开始的单词改为小写</li>
+<li><code>gu$</code> 将光标处到结尾的单词改为小写</li>
+<li>guG 光标行到结束行改为小写</li>
+<li>gugg 光标行到首行改为小写</li>
+<li>gu1G 同 gugg</li>
+<li>gggUG 将整篇文章改为大写 gg 光标到文件第一个字符 gU 把选定范围全部大写 G 到文件结束</li>
+</ul>
+<h2 id="Esc-和-ctrl"><a href="#Esc-和-ctrl" class="headerlink" title="Esc 和 ctrl ["></a>Esc 和 ctrl [</h2><p>都可以退出insert模式，进入normal模式。</p>
+<h2 id="查找和替换"><a href="#查找和替换" class="headerlink" title="查找和替换"></a>查找和替换</h2><ul>
+<li><p>向下查找 &#x2F;内容</p>
+</li>
+<li><p>向上查找 ?内容</p>
+</li>
+<li><p>n 向下继续查找</p>
+</li>
+<li><p>N 向上继续查找</p>
+</li>
+<li><p>搜索选定的关键字</p>
+</li>
+<li><p>这段话有很多 is，只是它们的格式不同，It is important to Is remember that IS this tutor is set up to teach by</p>
+</li>
+<li><p><code>:s/is/was</code> 替换当前行的<code>第一个</code>is 为 was</p>
+</li>
+<li><p><code>:s/is/was/g</code> 替换当前行的<code>所有</code>is 为 was 替换后 It was important to Is remember that IS thwas tutor was set up to teach by 连 this 都被替换为 thwas 了，但是 Is 和 IS 没有被替换</p>
+</li>
+<li><p><code>:4,$s/is/was</code> 从第 4 行到最后一行(<code>$</code>)，替换所有的第一个 is 为 was</p>
+</li>
+<li><p><code>:4,s/is/was</code> 在第 4 行，替换第一个 is 为 was</p>
+</li>
+<li><p><code>:.,$s/is/was</code> 从当前行到最后一行（<code>$</code>），替换所有的第一个 is 为 was</p>
+</li>
+<li><p><code>:1,$s/is/was</code> 替换所有行的第一个 is 为 was（从第 1 行到最后一行）</p>
+</li>
+<li><p><code>:%s/public/private/g</code> 替换命令可以在全文中用 public 替换为 private</p>
+</li>
+<li><p>1,3s&#x2F;^&#x2F;#&#x2F;g 第 1 到第 3 行的开头添加注释#</p>
+</li>
+<li><p>1,3s&#x2F;#&#x2F;&#x2F;g 第 1 到第 3 行替换#为空</p>
+</li>
+<li><p>1,3s&#x2F;^&#x2F;//&#x2F;g 第 1 到第 3 行的开头添加注释&#x2F;&#x2F;</p>
+</li>
+<li><p>:1,3s&#x2F;//&#x2F;&#x2F;g</p>
+</li>
+</ul>
+<h2 id="v-可以视模式选择"><a href="#v-可以视模式选择" class="headerlink" title="v 可以视模式选择"></a>v 可以视模式选择</h2><h3 id="vaw-选择一个词，会包含空格"><a href="#vaw-选择一个词，会包含空格" class="headerlink" title="vaw 选择一个词，会包含空格"></a>vaw 选择一个词，会包含空格</h3><h3 id="viw-选择一个此，不会包含空格"><a href="#viw-选择一个此，不会包含空格" class="headerlink" title="viw 选择一个此，不会包含空格"></a>viw 选择一个此，不会包含空格</h3><h3 id="vi”"><a href="#vi”" class="headerlink" title="vi”"></a>vi”</h3><h3 id="va”"><a href="#va”" class="headerlink" title="va”"></a>va”</h3><h3 id="vni”"><a href="#vni”" class="headerlink" title="vni”"></a>vni”</h3><h3 id="vna”"><a href="#vna”" class="headerlink" title="vna”"></a>vna”</h3><h3 id="vit"><a href="#vit" class="headerlink" title="vit"></a>vit</h3><p>有这么一段代码<code>&lt;h1&gt;Hello World&lt;/h1&gt;</code>，鼠标停留在h1标签中的任何一个位置，vit 将选中Hello World</p>
+<h3 id="vat"><a href="#vat" class="headerlink" title="vat"></a>vat</h3><p>vat 将选中整个h1标签及内容。</p>
+<h3 id="dit"><a href="#dit" class="headerlink" title="dit"></a>dit</h3><p>dit 删除整个标签中的内容</p>
+<h3 id="dat"><a href="#dat" class="headerlink" title="dat"></a>dat</h3><p>dat 删除整个标签</p>
+<p>有这么一段代码<code>var temp = (map (+) (&quot;foo&quot;))</code>，鼠标停留在第一个o上。</p>
+<pre><code class="sh">cmd               selected
+- vi&quot;           =&gt; foo
+- va&quot;           =&gt; &quot;foo&quot;
+- vi(           =&gt; &quot;foo&quot;
+- va(           =&gt; (&quot;foo&quot;)
+- v2i(          =&gt; map (+) (&quot;foo&quot;)
+- v2a(          =&gt; (map (+) (&quot;foo&quot;))
+- vaw           =&gt; foo
+
+
+i =&gt; inner
+a =&gt; at
+
+vi&quot; =&gt; v1i&quot; inner 1个`&quot;对`
+va&quot; =&gt; v2a&quot; at 2个`&quot;对`
+</code></pre>
+<p>按v之后，即进入了可以视模式选择，此后按hjkl或者0$^等操作来选择文本行，对选中的文本行进行其他的d,y,x等操作。</p>
+<h2 id="括号匹配-跳转"><a href="#括号匹配-跳转" class="headerlink" title="% 括号匹配[] () {}跳转"></a>% 括号匹配[] () {}跳转</h2><p><code>V%d</code> 用于删除匹配括号的行</p>
+<h2 id="块操作-lt-C-v-gt"><a href="#块操作-lt-C-v-gt" class="headerlink" title="块操作&lt;C-v&gt;"></a>块操作&lt;C-v&gt;</h2><p>对如下json前面添加两个&#x2F;&#x2F;。</p>
+<pre><code class="sh">var json = [
+Arial,
+background,
+calc,
+data,
+ed8d99,
+false,
+getContextPath,
+head,
+]
+</code></pre>
+<p>操作：<code>0 &lt;C v&gt; &lt;C d&gt; I // Esc</code></p>
+<ul>
+<li><code>0/^ 将光标位于Arial单词上</code></li>
+<li><code>&lt;C v&gt;</code></li>
+<li><code>选中具体行（如下方案任意一种）</code><ul>
+<li><code>j 向下直到head处</code></li>
+<li><code>或者 &lt;C d&gt; 直到]处，再按k，将光标移动到head处</code></li>
+<li><code>或者 i[ 忽略[]对【--推荐--】</code></li>
+</ul>
+</li>
+<li><code>I</code></li>
+<li><code>//</code></li>
+<li><code>Esc</code></li>
+</ul>
+<h2 id="宏录制-qa-操作序列-q-a"><a href="#宏录制-qa-操作序列-q-a" class="headerlink" title="宏录制 qa 操作序列 q, @a, @@"></a>宏录制 qa 操作序列 q, @a, @@</h2><ul>
+<li>qa 把你的操作记录到寄存器a</li>
+<li>于是@a会replay被录制的宏</li>
+<li>@@ 是一个快捷键用来replay最新录制的宏。</li>
+</ul>
+<p>在一个只有一行且这一行只有“1”的文本中，键入如下命令：</p>
+<ul>
+<li>qaYp&lt;C-a&gt;q<ul>
+<li>qa 开始录制</li>
+<li>Yp 复制一行</li>
+<li>&lt;C-a&gt;数字加1</li>
+<li>q 停止录制</li>
+</ul>
+</li>
+<li>@a 在1下面写下 2</li>
+<li>@@ 在2下面生成 3</li>
+<li>100@@ 在3下面生成100行</li>
+</ul>
+<h2 id="Refs"><a href="#Refs" class="headerlink" title="Refs"></a>Refs</h2><p><a target="_blank" rel="noopener" href="https://coolshell.cn/articles/5426.html">简明Vim 练级攻略||酷壳 - Cool Shell</a></p>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/Vim/">Vim</a></div></article><div class="article-copyright"><p>标题: <a href="/2023/01/02/Vim%E5%BF%AB%E6%8D%B7%E9%94%AE/">Vim快捷键</a></p><p> 链接: <a href="/2023/01/02/Vim%E5%BF%AB%E6%8D%B7%E9%94%AE/">http://cwang110.github.io/2023/01/02/Vim%E5%BF%AB%E6%8D%B7%E9%94%AE/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2023/01/02/%E8%A7%A3%E5%86%B3Vim%E7%B2%98%E8%B4%B4%E4%BB%A3%E7%A0%81%E6%97%B6%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98/"
+  style="background-image:url(/assets/images/random/23.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>解决Vim粘贴代码时乱码问题</p>
+  </div>
+</a>
+<a class="page_down" href="/2023/01/03/Python%E7%9A%84%E7%89%B9%E6%AE%8A%E5%B1%9E%E6%80%A7%E5%92%8C%E6%96%B9%E6%B3%95/"
+style="background-image:url(/assets/images/random/25.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>Python的特殊属性和方法</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vim-%E4%BD%BF%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">vim 使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B0%E5%BB%BA%E5%B9%B6%E7%BC%96%E8%BE%91%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">新建并编辑文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6-%E7%B2%98%E8%B4%B4-%E6%92%A4%E9%94%80-%E5%88%A0%E9%99%A4-%E5%85%A8%E9%80%89"><span class="toc-number">1.2.</span> <span class="toc-text">复制 粘贴 撤销 删除 全选</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#i-o-a-r"><span class="toc-number">1.3.</span> <span class="toc-text">i o a r</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#h-j-k-l"><span class="toc-number">1.4.</span> <span class="toc-text">h j k l</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#J"><span class="toc-number">1.5.</span> <span class="toc-text">J</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#f"><span class="toc-number">1.6.</span> <span class="toc-text">f</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%92%8C-%E5%92%8C"><span class="toc-number">1.7.</span> <span class="toc-text">0 和 ^ 和 $</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#G-%E5%92%8C-gg"><span class="toc-number">1.8.</span> <span class="toc-text">G 和 gg</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#H-M-L"><span class="toc-number">1.9.</span> <span class="toc-text">H M L</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E5%AD%97"><span class="toc-number">1.10.</span> <span class="toc-text">数字</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%97-%E7%A9%BA%E6%A0%BC"><span class="toc-number">1.10.1.</span> <span class="toc-text">数字 空格</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%97-%E5%9B%9E%E8%BD%A6"><span class="toc-number">1.10.2.</span> <span class="toc-text">数字 回车</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TAB"><span class="toc-number">1.11.</span> <span class="toc-text">TAB</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E5%B0%8F%E5%86%99%E8%BD%AC%E6%8D%A2"><span class="toc-number">1.12.</span> <span class="toc-text">大小写转换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Esc-%E5%92%8C-ctrl"><span class="toc-number">1.13.</span> <span class="toc-text">Esc 和 ctrl [</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%92%8C%E6%9B%BF%E6%8D%A2"><span class="toc-number">1.14.</span> <span class="toc-text">查找和替换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v-%E5%8F%AF%E4%BB%A5%E8%A7%86%E6%A8%A1%E5%BC%8F%E9%80%89%E6%8B%A9"><span class="toc-number">1.15.</span> <span class="toc-text">v 可以视模式选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#vaw-%E9%80%89%E6%8B%A9%E4%B8%80%E4%B8%AA%E8%AF%8D%EF%BC%8C%E4%BC%9A%E5%8C%85%E5%90%AB%E7%A9%BA%E6%A0%BC"><span class="toc-number">1.15.1.</span> <span class="toc-text">vaw 选择一个词，会包含空格</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#viw-%E9%80%89%E6%8B%A9%E4%B8%80%E4%B8%AA%E6%AD%A4%EF%BC%8C%E4%B8%8D%E4%BC%9A%E5%8C%85%E5%90%AB%E7%A9%BA%E6%A0%BC"><span class="toc-number">1.15.2.</span> <span class="toc-text">viw 选择一个此，不会包含空格</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vi%E2%80%9D"><span class="toc-number">1.15.3.</span> <span class="toc-text">vi”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#va%E2%80%9D"><span class="toc-number">1.15.4.</span> <span class="toc-text">va”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vni%E2%80%9D"><span class="toc-number">1.15.5.</span> <span class="toc-text">vni”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vna%E2%80%9D"><span class="toc-number">1.15.6.</span> <span class="toc-text">vna”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vit"><span class="toc-number">1.15.7.</span> <span class="toc-text">vit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vat"><span class="toc-number">1.15.8.</span> <span class="toc-text">vat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dit"><span class="toc-number">1.15.9.</span> <span class="toc-text">dit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dat"><span class="toc-number">1.15.10.</span> <span class="toc-text">dat</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%AC%E5%8F%B7%E5%8C%B9%E9%85%8D-%E8%B7%B3%E8%BD%AC"><span class="toc-number">1.16.</span> <span class="toc-text">% 括号匹配[] () {}跳转</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9D%97%E6%93%8D%E4%BD%9C-lt-C-v-gt"><span class="toc-number">1.17.</span> <span class="toc-text">块操作&lt;C-v&gt;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8F%E5%BD%95%E5%88%B6-qa-%E6%93%8D%E4%BD%9C%E5%BA%8F%E5%88%97-q-a"><span class="toc-number">1.18.</span> <span class="toc-text">宏录制 qa 操作序列 q, @a, @@</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Refs"><span class="toc-number">1.19.</span> <span class="toc-text">Refs</span></a></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

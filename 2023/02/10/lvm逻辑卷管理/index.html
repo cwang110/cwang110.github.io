@@ -1,0 +1,548 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>lvm逻辑卷管理 | Rindemon</title><meta name="keywords" content="lvm逻辑卷"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">lvm逻辑卷管理</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="Linux-LVM分区与应用"><a href="#Linux-LVM分区与应用" class="headerlink" title="Linux LVM分区与应用"></a>Linux LVM分区与应用</h1><p>[toc]</p>
+<h2 id="1-什么是LVM"><a href="#1-什么是LVM" class="headerlink" title="1.什么是LVM"></a>1.什么是LVM</h2><p>LVM(Logical volume Manager)逻辑卷管理是通过将底层物理硬盘抽象封装起来,以逻辑卷的形式表现给上层系统,逻辑卷的大小可以动态调整,而且不会丢失现有数据.新加入的硬盘也不会改变现有上层的逻辑卷.</p>
+<p>作为一种动态磁盘管理机制,逻辑卷技术打打提高了磁盘管理的灵活性.</p>
+<h2 id="2-四个基本概念"><a href="#2-四个基本概念" class="headerlink" title="2.四个基本概念"></a>2.四个基本概念</h2><ol>
+<li><p>PE(physical Extend) 物理拓展</p>
+<ul>
+<li>LVM最基本单位</li>
+<li>默认4M大小</li>
+</ul>
+</li>
+<li><p>PV(physical volume) 物理卷</p>
+<ul>
+<li><p>物理设备</p>
+</li>
+<li><p>拆分为多个PE</p>
+</li>
+</ul>
+</li>
+<li><p>VG(physical group) 卷组(空间池 )</p>
+<ul>
+<li>由PE组成</li>
+</ul>
+</li>
+<li><p>LV(logical volume) 逻辑卷,操作系统最终使用逻辑卷</p>
+<ul>
+<li>从VG中取出一部分PE组成</li>
+</ul>
+</li>
+</ol>
+<h2 id="3-图示"><a href="#3-图示" class="headerlink" title="3.图示"></a>3.图示</h2><pre><code class="mermaid">  sequenceDiagram
+    participant PV
+    participant VG
+    participant LV
+    
+    PV-&gt;&gt;VG:PV拆分为PE,所有PE共同组成VG
+    loop 添加硬盘
+      PV-&gt;PV:继续拆分PE
+    end
+    VG-&gt;&gt;LV:LV从VG中取出部分PE形成一个逻辑卷
+  loop 添加空间
+      LV-&gt;LV:继续从VG中取出PE形成LV
+    end
+</code></pre>
+<h2 id="4-创建LVM的过程"><a href="#4-创建LVM的过程" class="headerlink" title="4.创建LVM的过程"></a>4.创建LVM的过程</h2><p>逻辑卷的大小必须是PE的整数倍</p>
+<pre><code class="mermaid">graph TD
+  A[物理设备] --&gt; |初始化|B(物理卷)
+  B --&gt; |创建并加入| C[卷组]
+    C --&gt; |基于卷组| D[逻辑卷]
+    D --&gt; E[文件系统]
+    E --&gt; F[挂载逻辑卷]
+    G[创建过程流程图示]
+</code></pre>
+<ol>
+<li>将物理磁盘设备初始化为物理卷</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# pvcreate /dev/sdb 
+  Physical volume &quot;/dev/sdb&quot; successfully created.
+</code></pre>
+<ul>
+<li>查看物理卷信息</li>
+</ul>
+<pre><code class="sh">[root@serv02 ~]# pvdisplay 
+  --- Physical volume ---
+  PV Name               /dev/sda2
+  VG Name               centos
+  PV Size               &lt;15.00 GiB / not usable 3.00 MiB
+  Allocatable           yes (but full)
+  PE Size               4.00 MiB
+  Total PE              3839
+  Free PE               0
+  Allocated PE          3839
+  PV UUID               vPo1Cg-9ZD5-XMZe-mkj4-1lsv-8BrT-UhxhnF
+   
+  &quot;/dev/sdb&quot; is a new physical volume of &quot;10.00 GiB&quot;
+  --- NEW Physical volume ---
+  PV Name               /dev/sdb
+  VG Name               
+  PV Size               10.00 GiB
+  Allocatable           NO
+  PE Size               0   
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               BfipOc-FnD5-UN2t-Pwud-sfMe-D4Qa-5wxsWb
+   
+[root@serv02 ~]# pvs
+  PV         VG     Fmt  Attr PSize   PFree 
+  /dev/sda2  centos lvm2 a--  &lt;15.00g     0 
+  /dev/sdb          lvm2 ---   10.00g 10.00g
+</code></pre>
+<ol start="2">
+<li>创建卷组,并将PV加入卷组中</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# vgcreate Nnuxcast /dev/sdb 
+  Volume group &quot;Nnuxcast&quot; successfully created
+</code></pre>
+<ul>
+<li>查看卷组</li>
+</ul>
+<pre><code class="sh">[root@serv02 ~]# vgdisplay 
+  --- Volume group ---
+  VG Name               Nnuxcast
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  1
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                0
+  Open LV               0
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;10.00 GiB
+  PE Size               4.00 MiB
+  Total PE              2559
+  Alloc PE / Size       0 / 0   
+  Free  PE / Size       2559 / &lt;10.00 GiB
+  VG UUID               H5dRdF-21wm-cski-z1Zi-3n5W-2b4x-THK2n1
+   
+  --- Volume group ---
+  VG Name               centos
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  3
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                2
+  Open LV               2
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;15.00 GiB
+  PE Size               4.00 MiB
+  Total PE              3839
+  Alloc PE / Size       3839 / &lt;15.00 GiB
+  Free  PE / Size       0 / 0   
+  VG UUID               g5wLSY-M6cf-IJCW-tyfd-TJPf-rx7c-JFB9sc
+   
+[root@serv02 ~]# vgs
+  VG       #PV #LV #SN Attr   VSize   VFree  
+  Nnuxcast   1   0   0 wz--n- &lt;10.00g &lt;10.00g
+  centos     1   2   0 wz--n- &lt;15.00g      0 
+</code></pre>
+<ol start="3">
+<li>基于卷组创建逻辑卷</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# lvcreate -n mylv -L 5G Nnuxcast
+  Logical volume &quot;mylv&quot; created.
+ #-n  逻辑卷名
+ #-L  逻辑卷大小
+</code></pre>
+<ul>
+<li>查看逻辑卷</li>
+</ul>
+<pre><code class="sh">[root@serv02 ~]# lvdisplay 
+  --- Logical volume ---
+  LV Path                /dev/Nnuxcast/mylv
+  LV Name                mylv
+  VG Name                Nnuxcast
+  LV UUID                8989Mx-40nm-UCOR-dbGF-1UUA-Qoqe-IGI77F
+  LV Write Access        read/write
+  LV Creation host, time serv02.wangc.com, 2021-10-19 07:46:31 -0400
+  LV Status              available
+  # open                 0
+  LV Size                5.00 GiB
+  Current LE             1280
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:2
+   
+  --- Logical volume ---
+  LV Path                /dev/centos/root
+  LV Name                root
+  VG Name                centos
+  LV UUID                oUPpmQ-vbH4-KdsY-7Klu-dszH-2vYw-RuhXeg
+  LV Write Access        read/write
+  LV Creation host, time localhost, 2021-09-25 07:14:18 -0400
+  LV Status              available
+  # open                 1
+  LV Size                13.39 GiB
+  Current LE             3429
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:0
+   
+  --- Logical volume ---
+  LV Path                /dev/centos/swap
+  LV Name                swap
+  VG Name                centos
+  LV UUID                uJsDxF-9Ycd-4mq0-LkLU-Lbpn-rI1T-wicfjY
+  LV Write Access        read/write
+  LV Creation host, time localhost, 2021-09-25 07:14:18 -0400
+  LV Status              available
+  # open                 2
+  LV Size                1.60 GiB
+  Current LE             410
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:1
+   
+[root@serv02 ~]# lvs
+  LV   VG       Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  mylv Nnuxcast -wi-a-----  5.00g                                                    
+  root centos   -wi-ao---- 13.39g                                                    
+  swap centos   -wi-ao----  1.60g   
+</code></pre>
+<ol start="4">
+<li>为创建好的逻辑卷创建文件系统</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# mkfs.ext4 /dev/Nnuxcast/mylv
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+327680 inodes, 1310720 blocks
+65536 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=1342177280
+40 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks: 
+  32768, 98304, 163840, 229376, 294912, 819200, 884736
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done 
+</code></pre>
+<ol start="5">
+<li>将格式化好的逻辑卷挂载使用</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# mount /dev/Nnuxcast/mylv /mnt
+[root@serv02 ~]# df -lh
+Filesystem                 Size  Used Avail Use% Mounted on
+devtmpfs                   484M     0  484M   0% /dev
+tmpfs                      496M     0  496M   0% /dev/shm
+tmpfs                      496M  7.1M  489M   2% /run
+tmpfs                      496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root     14G  1.3G   13G  10% /
+/dev/sda1                 1014M  137M  878M  14% /boot
+tmpfs                      100M     0  100M   0% /run/user/0
+/dev/mapper/Nnuxcast-mylv  4.8G   20M  4.6G   1% /mnt
+[root@serv02 ~]# mount
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime,seclabel)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+devtmpfs on /dev type devtmpfs (rw,nosuid,seclabel,size=495592k,nr_inodes=123898,mode=755)
+securityfs on /sys/kernel/security type securityfs (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev,seclabel)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,seclabel,gid=5,mode=620,ptmxmode=000)
+tmpfs on /run type tmpfs (rw,nosuid,nodev,seclabel,mode=755)
+tmpfs on /sys/fs/cgroup type tmpfs (ro,nosuid,nodev,noexec,seclabel,mode=755)
+cgroup on /sys/fs/cgroup/systemd type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd)
+pstore on /sys/fs/pstore type pstore (rw,nosuid,nodev,noexec,relatime)
+cgroup on /sys/fs/cgroup/freezer type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,freezer)
+cgroup on /sys/fs/cgroup/net_cls,net_prio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,net_prio,net_cls)
+cgroup on /sys/fs/cgroup/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,blkio)
+cgroup on /sys/fs/cgroup/memory type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,memory)
+cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,pids)
+cgroup on /sys/fs/cgroup/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpuset)
+cgroup on /sys/fs/cgroup/hugetlb type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,hugetlb)
+cgroup on /sys/fs/cgroup/cpu,cpuacct type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpuacct,cpu)
+cgroup on /sys/fs/cgroup/perf_event type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,perf_event)
+cgroup on /sys/fs/cgroup/devices type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,devices)
+configfs on /sys/kernel/config type configfs (rw,relatime)
+/dev/mapper/centos-root on / type xfs (rw,relatime,seclabel,attr2,inode64,noquota)
+selinuxfs on /sys/fs/selinux type selinuxfs (rw,relatime)
+systemd-1 on /proc/sys/fs/binfmt_misc type autofs (rw,relatime,fd=22,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=12435)
+hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
+mqueue on /dev/mqueue type mqueue (rw,relatime,seclabel)
+debugfs on /sys/kernel/debug type debugfs (rw,relatime)
+/dev/sda1 on /boot type xfs (rw,relatime,seclabel,attr2,inode64,noquota)
+tmpfs on /run/user/0 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=101512k,mode=700)
+/dev/mapper/Nnuxcast-mylv on /mnt type ext4 (rw,relatime,seclabel,data=ordered)
+</code></pre>
+<h2 id="5-删除操作"><a href="#5-删除操作" class="headerlink" title="5.删除操作"></a>5.删除操作</h2><ol>
+<li><p>删除LV</p>
+<p>删除前先卸载已经挂载的目录</p>
+</li>
+</ol>
+<pre><code class="sh">[root@serv02 mapper]# umount /mnt/
+[root@serv02 mapper]# lvremove /dev/Nnuxcast/mylv 
+Do you really want to remove active logical volume Nnuxcast/mylv? [y/n]: y
+  Logical volume &quot;mylv&quot; successfully removed
+</code></pre>
+<ol start="2">
+<li>删除VG</li>
+</ol>
+<pre><code class="sh">[root@serv02 mapper]# vgremove /dev/Nnuxcast
+  Volume group &quot;Nnuxcast&quot; successfully removed
+[root@serv02 mapper]# vgs
+  VG     #PV #LV #SN Attr   VSize   VFree
+  centos   1   2   0 wz--n- &lt;15.00g    0 
+</code></pre>
+<ol start="3">
+<li>删除物理卷</li>
+</ol>
+<pre><code class="sh">[root@serv02 mapper]# pvremove /dev/sdb
+  Labels on physical volume &quot;/dev/sdb&quot; successfully wiped.
+[root@serv02 mapper]# pvs
+  PV         VG     Fmt  Attr PSize   PFree
+  /dev/sda2  centos lvm2 a--  &lt;15.00g    0 
+</code></pre>
+<h2 id="6逻辑卷的大小调整"><a href="#6逻辑卷的大小调整" class="headerlink" title="6逻辑卷的大小调整"></a>6逻辑卷的大小调整</h2><h3 id="6-1拉伸逻辑卷"><a href="#6-1拉伸逻辑卷" class="headerlink" title="6.1拉伸逻辑卷"></a>6.1拉伸逻辑卷</h3><blockquote>
+<p><strong>逻辑卷可以在线拉伸,不会丢失数据</strong></p>
+</blockquote>
+<ol>
+<li>保证VG中有足够的空闲空间</li>
+</ol>
+<pre><code class="sh">[root@serv02 mapper]# vgdisplay 
+  --- Volume group ---
+  VG Name               Mypv
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  2
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                1
+  Open LV               1
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;10.00 GiB
+  PE Size               4.00 MiB
+  Total PE              2559
+  Alloc PE / Size       512 / 2.00 GiB
+  Free  PE / Size       2047 / &lt;8.00 GiB
+  VG UUID               wikKOb-Obfy-nsCL-956f-ufsc-QJzi-0CTFh3
+   
+  --- Volume group ---
+  VG Name               centos
+  System ID             
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  3
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                2
+  Open LV               2
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;15.00 GiB
+  PE Size               4.00 MiB
+  Total PE              3839
+  Alloc PE / Size       3839 / &lt;15.00 GiB
+  Free  PE / Size       0 / 0   
+  VG UUID               g5wLSY-M6cf-IJCW-tyfd-TJPf-rx7c-JFB9sc
+</code></pre>
+<ol start="2">
+<li>扩充逻辑卷(此处原逻辑卷为2G)</li>
+</ol>
+<pre><code class="sh">[root@serv02 mapper]# lvextend -L +1G /dev/Mypv/mylv 
+  Size of logical volume Mypv/mylv changed from 2.00 GiB (512 extents) to 3.00 GiB (768 extents).
+  Logical volume Mypv/mylv successfully resized.
+ #此时查看磁盘/mnt仍是2G
+[root@serv02 mapper]# df -lh
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 484M     0  484M   0% /dev
+tmpfs                    496M     0  496M   0% /dev/shm
+tmpfs                    496M  7.1M  489M   2% /run
+tmpfs                    496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   14G  1.3G   13G  10% /
+/dev/sda1               1014M  137M  878M  14% /boot
+tmpfs                    100M     0  100M   0% /run/user/0
+/dev/mapper/Mypv-mylv    2.0G  6.0M  1.8G   1% /mnt
+</code></pre>
+<ol start="3">
+<li>更新文件系统</li>
+</ol>
+<pre><code class="sh">[root@serv02 mapper]# resize2fs /dev/Mypv/mylv 
+resize2fs 1.42.9 (28-Dec-2013)
+Filesystem at /dev/Mypv/mylv is mounted on /mnt; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 1
+The filesystem on /dev/Mypv/mylv is now 786432 blocks long.
+
+#此时查看已经增加
+[root@serv02 mapper]# df -h
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 484M     0  484M   0% /dev
+tmpfs                    496M     0  496M   0% /dev/shm
+tmpfs                    496M  7.1M  489M   2% /run
+tmpfs                    496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   14G  1.3G   13G  10% /
+/dev/sda1               1014M  137M  878M  14% /boot
+tmpfs                    100M     0  100M   0% /run/user/0
+/dev/mapper/Mypv-mylv    2.9G  6.0M  2.8G   1% /mnt
+
+#查看文件系统
+cat /etc/fstab
+
+#resize2fs命令针对ext2、ext3、ext4文件系统
+#xfs_growfs 针对文件系统xfs
+</code></pre>
+<h3 id="6-2扩充卷组"><a href="#6-2扩充卷组" class="headerlink" title="6.2扩充卷组"></a>6.2扩充卷组</h3><ol>
+<li>查看一下卷组</li>
+</ol>
+<pre><code class="sh">[root@serv02 mapper]# vgs
+  VG     #PV #LV #SN Attr   VSize   VFree 
+  Mypv     1   1   0 wz--n- &lt;10.00g &lt;7.00g
+  centos   1   2   0 wz--n- &lt;15.00g     0 
+</code></pre>
+<ol start="2">
+<li><p>添加物理硬盘</p>
+</li>
+<li><p>将硬盘格式化为PV</p>
+</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# pvcreate /dev/sdc 
+  Physical volume &quot;/dev/sdc&quot; successfully created.
+#查看一下PV
+[root@serv02 ~]# pvs
+  PV         VG     Fmt  Attr PSize   PFree 
+  /dev/sda2  centos lvm2 a--  &lt;15.00g     0 
+  /dev/sdb   Mypv   lvm2 a--  &lt;10.00g &lt;7.00g
+  /dev/sdc          lvm2 ---   10.00g 10.00g
+</code></pre>
+<ol start="4">
+<li>将新的PV加入到VG中</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# vgs #先看一下
+  VG     #PV #LV #SN Attr   VSize   VFree 
+  Mypv     1   1   0 wz--n- &lt;10.00g &lt;7.00g
+  centos   1   2   0 wz--n- &lt;15.00g     0 
+[root@serv02 ~]# vgextend Mypv /dev/sdc #添加
+  Volume group &quot;Mypv&quot; successfully extended
+[root@serv02 ~]# vgs #再看一眼.有了
+  VG     #PV #LV #SN Attr   VSize   VFree 
+  Mypv     2   1   0 wz--n-  19.99g 16.99g
+  centos   1   2   0 wz--n- &lt;15.00g     0 
+</code></pre>
+<h3 id="6-3缩小逻辑卷"><a href="#6-3缩小逻辑卷" class="headerlink" title="6.3缩小逻辑卷"></a>6.3缩小逻辑卷</h3><blockquote>
+<p><strong>缩小操作无法在线执行,需要卸载已经挂载的逻辑卷</strong></p>
+</blockquote>
+<ol>
+<li>卸载已经挂载的逻辑卷</li>
+</ol>
+<pre><code class="sh">#老规矩,看一眼在操作,操作完了再看一眼
+[root@serv02 ~]# df -lh
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 484M     0  484M   0% /dev
+tmpfs                    496M     0  496M   0% /dev/shm
+tmpfs                    496M  7.1M  489M   2% /run
+tmpfs                    496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   14G  1.3G   13G  10% /
+/dev/sda1               1014M  137M  878M  14% /boot
+tmpfs                    100M     0  100M   0% /run/user/0
+/dev/mapper/Mypv-mylv    2.9G  9.0M  2.8G   1% /mnt
+[root@serv02 ~]# umount /mnt/
+[root@serv02 ~]# df -lh
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 484M     0  484M   0% /dev
+tmpfs                    496M     0  496M   0% /dev/shm
+tmpfs                    496M  7.1M  489M   2% /run
+tmpfs                    496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   14G  1.3G   13G  10% /
+/dev/sda1               1014M  137M  878M  14% /boot
+tmpfs                    100M     0  100M   0% /run/user/0
+</code></pre>
+<ol start="2">
+<li>缩小文件系统</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# resize2fs /dev/Mypv/mylv 1G
+resize2fs 1.42.9 (28-Dec-2013)
+Please run &#39;e2fsck -f /dev/Mypv/mylv&#39; first.
+#此处提示需要先运行e2fsck -f /dev/Mypv/mylv对文件系统进行检查,-f参数是强制检查,不修复
+[root@serv02 ~]# e2fsck -f /dev/Mypv/mylv
+e2fsck 1.42.9 (28-Dec-2013)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+/dev/Mypv/mylv: 11/196608 files (0.0% non-contiguous), 31036/786432 blocks
+[root@serv02 ~]# resize2fs /dev/Mypv/mylv 1G #
+resize2fs 1.42.9 (28-Dec-2013)
+Resizing the filesystem on /dev/Mypv/mylv to 262144 (4k) blocks.
+The filesystem on /dev/Mypv/mylv is now 262144 blocks long.
+</code></pre>
+<ol start="3">
+<li>缩小LV</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# lvreduce -L -2G /dev/Mypv/mylv 
+  WARNING: Reducing active logical volume to 1.00 GiB.
+  THIS MAY DESTROY YOUR DATA (filesystem etc.)
+Do you really want to reduce Mypv/mylv? [y/n]: y
+  Size of logical volume Mypv/mylv changed from 3.00 GiB (768 extents) to 1.00 GiB (256 extents).
+  Logical volume Mypv/mylv successfully resized.
+[root@serv02 ~]# lvs
+  LV   VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  mylv Mypv   -wi-a-----  1.00g                                                    
+  root centos -wi-ao---- 13.39g                                                    
+  swap centos -wi-ao----  1.60g   
+#缩小时一定要检查空间是否正确,否则会损坏文件数据
+</code></pre>
+<ol start="4">
+<li>重新挂载</li>
+</ol>
+<pre><code class="sh">[root@serv02 ~]# mount /dev/Mypv/mylv /mnt/
+[root@serv02 ~]# df -lh
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 484M     0  484M   0% /dev
+tmpfs                    496M     0  496M   0% /dev/shm
+tmpfs                    496M  7.1M  489M   2% /run
+tmpfs                    496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   14G  1.3G   13G  10% /
+/dev/sda1               1014M  137M  878M  14% /boot
+tmpfs                    100M     0  100M   0% /run/user/0
+/dev/mapper/Mypv-mylv    944M  7.6M  870M   1% /mnt
+</code></pre>
+<h3 id="6-4缩小卷组"><a href="#6-4缩小卷组" class="headerlink" title="6.4缩小卷组"></a>6.4缩小卷组</h3><p>缩小卷组直接从卷组中取出PV即可</p>
+<pre><code class="sh">[root@serv02 ~]# vgreduce Mypv /dev/sdc 
+  Removed &quot;/dev/sdc&quot; from volume group &quot;Mypv&quot;
+[root@serv02 ~]# vgs
+  VG     #PV #LV #SN Attr   VSize   VFree 
+  Mypv     1   1   0 wz--n- &lt;10.00g &lt;9.00g
+  centos   1   2   0 wz--n- &lt;15.00g     0 
+#此时可以看到VG中少了一个PV
+#特别注意:VG的空闲空间必须大于要取出的PV的空间大小
+</code></pre>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/">lvm逻辑卷</a></div></article><div class="article-copyright"><p>标题: <a href="/2023/02/10/lvm%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/">lvm逻辑卷管理</a></p><p> 链接: <a href="/2023/02/10/lvm%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/">http://cwang110.github.io/2023/02/10/lvm%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2023/02/10/ansible%E5%85%A5%E9%97%A8/"
+  style="background-image:url(/assets/images/random/32.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>ansible入门</p>
+  </div>
+</a>
+<a class="page_down" href="/2023/04/04/%E5%88%9D%E8%AF%86tcpdump/"
+style="background-image:url(/assets/images/random/29.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>初识tcpdump</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux-LVM%E5%88%86%E5%8C%BA%E4%B8%8E%E5%BA%94%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">Linux LVM分区与应用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AFLVM"><span class="toc-number">1.1.</span> <span class="toc-text">1.什么是LVM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%9B%9B%E4%B8%AA%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.2.</span> <span class="toc-text">2.四个基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%9B%BE%E7%A4%BA"><span class="toc-number">1.3.</span> <span class="toc-text">3.图示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%88%9B%E5%BB%BALVM%E7%9A%84%E8%BF%87%E7%A8%8B"><span class="toc-number">1.4.</span> <span class="toc-text">4.创建LVM的过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%88%A0%E9%99%A4%E6%93%8D%E4%BD%9C"><span class="toc-number">1.5.</span> <span class="toc-text">5.删除操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6%E9%80%BB%E8%BE%91%E5%8D%B7%E7%9A%84%E5%A4%A7%E5%B0%8F%E8%B0%83%E6%95%B4"><span class="toc-number">1.6.</span> <span class="toc-text">6逻辑卷的大小调整</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1%E6%8B%89%E4%BC%B8%E9%80%BB%E8%BE%91%E5%8D%B7"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1拉伸逻辑卷</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2%E6%89%A9%E5%85%85%E5%8D%B7%E7%BB%84"><span class="toc-number">1.6.2.</span> <span class="toc-text">6.2扩充卷组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3%E7%BC%A9%E5%B0%8F%E9%80%BB%E8%BE%91%E5%8D%B7"><span class="toc-number">1.6.3.</span> <span class="toc-text">6.3缩小逻辑卷</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4%E7%BC%A9%E5%B0%8F%E5%8D%B7%E7%BB%84"><span class="toc-number">1.6.4.</span> <span class="toc-text">6.4缩小卷组</span></a></li></ol></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

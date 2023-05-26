@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>005-Go语言变量的声明 | Rindemon</title><meta name="keywords" content="Golang"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">005-Go语言变量的声明</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="005-Go语言变量的声明"><a href="#005-Go语言变量的声明" class="headerlink" title="005-Go语言变量的声明"></a>005-Go语言变量的声明</h1><h2 id="1-声明变量的一般形式是使用-var-关键字"><a href="#1-声明变量的一般形式是使用-var-关键字" class="headerlink" title="1.声明变量的一般形式是使用 var 关键字"></a>1.声明变量的一般形式是使用 var 关键字</h2><pre><code class="go">var name type
+</code></pre>
+<p>其中，var 是声明变量的关键字，name 是变量名，type 是变量的类型。</p>
+<p>需要注意的是，Go语言和许多编程语言不同，它在声明变量时将变量的类型放在变量的名称之后。这样做的好处就是可以避免像C语言中那样含糊不清的声明形式，例如：int* a, b; 。其中只有 a 是指针而 b 不是。如果你想要这两个变量都是指针，则需要将它们分开书写。而在 Go 中，则可以和轻松地将它们都声明为指针类型：</p>
+<pre><code class="go">var a, b *int
+</code></pre>
+<h2 id="2-Go语言的基本类型有"><a href="#2-Go语言的基本类型有" class="headerlink" title="2.Go语言的基本类型有"></a>2.Go语言的基本类型有</h2><ul>
+<li>bool</li>
+<li>string</li>
+<li>int、int8、int16、int32、int64</li>
+<li>uint、uint8、uint16、uint32、uint64、uintptr</li>
+<li>byte &#x2F;&#x2F; uint8 的别名</li>
+<li>rune &#x2F;&#x2F; int32 的别名 代表一个 Unicode 码</li>
+<li>float32、float64</li>
+<li>complex64、complex128</li>
+</ul>
+<h2 id="3-批量声明变量"><a href="#3-批量声明变量" class="headerlink" title="3.批量声明变量"></a>3.批量声明变量</h2><pre><code class="go">var (
+    a int
+    b string
+    c []float32
+    d func() bool
+    e struct &#123;
+        x int
+    &#125;
+)
+</code></pre>
+<h2 id="4-简短的方式声明"><a href="#4-简短的方式声明" class="headerlink" title="4.简短的方式声明"></a>4.简短的方式声明</h2><pre><code class="sh">名字 := 表达式
+</code></pre>
+<p>需要注意的是，简短模式（short variable declaration）有以下限制：</p>
+<ul>
+<li>定义变量，同时显式初始化。</li>
+<li>不能提供数据类型。</li>
+<li>只能用在函数内部。</li>
+</ul>
+<p>声明一组变量</p>
+<pre><code class="go">i, j := 0, 1
+</code></pre>
+<pre><code class="go">func main() &#123;
+   x:=100
+   a,s:=1, &quot;abc&quot;
+&#125;
+</code></pre>
+<blockquote>
+<p>搬运于<a target="_blank" rel="noopener" href="http://c.biancheng.net/">C语言中文网</a></p>
+</blockquote>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/Golang/">Golang</a></div></article><div class="article-copyright"><p>标题: <a href="/2022/12/25/005-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E5%A3%B0%E6%98%8E/">005-Go语言变量的声明</a></p><p> 链接: <a href="/2022/12/25/005-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E5%A3%B0%E6%98%8E/">http://cwang110.github.io/2022/12/25/005-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E5%A3%B0%E6%98%8E/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2022/12/21/Ldap%E7%BB%9F%E4%B8%80%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/"
+  style="background-image:url(/assets/images/random/12.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>Ldap统一认证服务搭建</p>
+  </div>
+</a>
+<a class="page_down" href="/2022/12/25/020-Go%E8%AF%AD%E8%A8%80type%E5%85%B3%E9%94%AE%E5%AD%97%EF%BC%88%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%EF%BC%89/"
+style="background-image:url(/assets/images/random/10.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>020-Go语言type关键字（类型别名）</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#005-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E5%A3%B0%E6%98%8E"><span class="toc-number">1.</span> <span class="toc-text">005-Go语言变量的声明</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E7%9A%84%E4%B8%80%E8%88%AC%E5%BD%A2%E5%BC%8F%E6%98%AF%E4%BD%BF%E7%94%A8-var-%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-number">1.1.</span> <span class="toc-text">1.声明变量的一般形式是使用 var 关键字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Go%E8%AF%AD%E8%A8%80%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E6%9C%89"><span class="toc-number">1.2.</span> <span class="toc-text">2.Go语言的基本类型有</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%89%B9%E9%87%8F%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F"><span class="toc-number">1.3.</span> <span class="toc-text">3.批量声明变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AE%80%E7%9F%AD%E7%9A%84%E6%96%B9%E5%BC%8F%E5%A3%B0%E6%98%8E"><span class="toc-number">1.4.</span> <span class="toc-text">4.简短的方式声明</span></a></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

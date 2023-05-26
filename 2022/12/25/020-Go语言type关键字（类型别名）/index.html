@@ -1,0 +1,155 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>020-Go语言type关键字（类型别名） | Rindemon</title><meta name="keywords" content="Golang"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">020-Go语言type关键字（类型别名）</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="020-Go语言type关键字（类型别名）"><a href="#020-Go语言type关键字（类型别名）" class="headerlink" title="020-Go语言type关键字（类型别名）"></a>020-Go语言type关键字（类型别名）</h1><p>类型别名是 Go 1.9 版本添加的新功能，主要用于解决代码升级、迁移中存在的类型兼容性问题。在 C&#x2F;C++ 语言中，代码重构升级可以使用宏快速定义一段新的代码，Go语言中没有选择加入宏，而是解决了重构中最麻烦的类型名变更问题。</p>
+<p>在 Go 1.9 版本之前定义内建类型的代码是这样写的：</p>
+<pre><code class="go">type byte uint8
+type rune int32
+</code></pre>
+<p>而在 Go 1.9 版本之后变为：</p>
+<pre><code class="go">type byte = uint8
+type rune = int32
+</code></pre>
+<p>这个修改就是配合类型别名而进行的修改。</p>
+<h2 id="区分类型别名与类型定义"><a href="#区分类型别名与类型定义" class="headerlink" title="区分类型别名与类型定义"></a>区分类型别名与类型定义</h2><p>定义类型别名的写法为：</p>
+<pre><code class="go">type TypeAlias = Type
+</code></pre>
+<p>类型别名规定：TypeAlias 只是 Type 的别名，本质上 TypeAlias 与 Type 是同一个类型，就像一个孩子小时候有小名、乳名，上学后用学名，英语老师又会给他起英文名，但这些名字都指的是他本人。</p>
+<pre><code class="go">package main
+import (
+    &quot;fmt&quot;
+)
+// 将NewInt定义为int类型
+type NewInt int
+// 将int取一个别名叫IntAlias
+type IntAlias = int
+func main() &#123;
+    // 将a声明为NewInt类型
+    var a NewInt
+    // 查看a的类型名
+    fmt.Printf(&quot;a type: %T\n&quot;, a)
+    // 将a2声明为IntAlias类型
+    var a2 IntAlias
+    // 查看a2的类型名
+    fmt.Printf(&quot;a2 type: %T\n&quot;, a2)
+&#125;
+</code></pre>
+<p>代码说明如下：</p>
+<ul>
+<li>第 8 行，将 NewInt 定义为 int 类型，这是常见的定义类型的方法，通过 type 关键字的定义，NewInt 会形成一种新的类型，NewInt 本身依然具备 int 类型的特性。</li>
+<li>第 11 行，将 IntAlias 设置为 int 的一个别名，使用 IntAlias 与 int 等效。</li>
+<li>第 16 行，将 a 声明为 NewInt 类型，此时若打印，则 a 的值为 0。</li>
+<li>第 18 行，使用%T格式化参数，打印变量 a 本身的类型。</li>
+<li>第 21 行，将 a2 声明为 IntAlias 类型，此时打印 a2 的值为 0。</li>
+<li>第 23 行，打印 a2 变量的类型。</li>
+</ul>
+<p>结果显示 a 的类型是 main.NewInt，表示 main 包下定义的 NewInt 类型，a2 类型是 int，IntAlias 类型只会在代码中存在，编译完成时，不会有 IntAlias 类型。</p>
+<h2 id="非本地类型不能定义方法"><a href="#非本地类型不能定义方法" class="headerlink" title="非本地类型不能定义方法"></a>非本地类型不能定义方法</h2><p>能够随意地为各种类型起名字，是否意味着可以在自己包里为这些类型任意添加方法呢？参见下面的代码演示：</p>
+<pre><code class="go">package main
+import (
+    &quot;time&quot;
+)
+// 定义time.Duration的别名为MyDuration
+type MyDuration = time.Duration
+// 为MyDuration添加一个函数
+func (m MyDuration) EasySet(a string) &#123;
+&#125;
+func main() &#123;
+&#125;
+</code></pre>
+<p>编译报错信息如下</p>
+<pre><code class="go">cannot define new methods on non-local type time.Duration
+</code></pre>
+<p>编译器提示：不能在一个非本地的类型 time.Duration 上定义新方法，非本地类型指的就是 time.Duration 不是在 main 包中定义的，而是在 time 包中定义的，与 main 包不在同一个包中，因此不能为不在一个包中的类型定义方法。</p>
+<p>解决这个问题有下面两种方法：</p>
+<ul>
+<li>将第 8 行修改为 type MyDuration time.Duration，也就是将 MyDuration 从别名改为类型；</li>
+<li>将 MyDuration 的别名定义放在 time 包中。</li>
+</ul>
+<h2 id="在结构体成员嵌入时使用别名"><a href="#在结构体成员嵌入时使用别名" class="headerlink" title="在结构体成员嵌入时使用别名"></a>在结构体成员嵌入时使用别名</h2><p>当类型别名作为结构体嵌入的成员时会发生什么情况呢？请参考下面的代码。</p>
+<pre><code class="go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;reflect&quot;
+)
+
+// 定义商标结构
+type Brand struct &#123;
+&#125;
+
+// 为商标结构添加Show()方法
+func (t Brand) Show() &#123;
+&#125;
+
+// 为Brand定义一个别名FakeBrand
+type FakeBrand = Brand
+
+// 定义车辆结构
+type Vehicle struct &#123;
+
+    // 嵌入两个结构
+    FakeBrand
+    Brand
+&#125;
+
+func main() &#123;
+
+    // 声明变量a为车辆类型
+    var a Vehicle
+   
+    // 指定调用FakeBrand的Show
+    a.FakeBrand.Show()
+
+    // 取a的类型反射对象
+    ta := reflect.TypeOf(a)
+
+    // 遍历a的所有成员
+    for i := 0; i &lt; ta.NumField(); i++ &#123;
+
+        // a的成员信息
+        f := ta.Field(i)
+
+        // 打印成员的字段名和类型
+        fmt.Printf(&quot;FieldName: %v, FieldType: %v\n&quot;, f.Name, f.Type.
+            Name())
+    &#125;
+&#125;
+</code></pre>
+<p>代码输出如下：</p>
+<pre><code class="sh">FieldName: FakeBrand, FieldType: Brand
+FieldName: Brand, FieldType: Brand
+</code></pre>
+<p>代码说明如下：</p>
+<ul>
+<li>第 9 行，定义商标结构。</li>
+<li>第 13 行，为商标结构添加 Show() 方法。</li>
+<li>第 17 行，为 Brand 定义一个别名 FakeBrand。</li>
+<li>第 20～25 行，定义车辆结构 Vehicle，嵌入 FakeBrand 和 Brand 结构。</li>
+<li>第 30 行，将 Vechicle 实例化为 a。</li>
+<li>第 33 行，显式调用 Vehicle 中 FakeBrand 的 Show() 方法。</li>
+<li>第 36 行，使用反射取变量 a 的反射类型对象，以查看其成员类型。</li>
+<li>第 39～42 行，遍历 a 的结构体成员。</li>
+<li>第 45 行，打印 Vehicle 类型所有成员的信息。</li>
+</ul>
+<p>这个例子中，FakeBrand 是 Brand 的一个别名，在 Vehicle 中嵌入 FakeBrand 和 Brand 并不意味着嵌入两个 Brand，FakeBrand 的类型会以名字的方式保留在 Vehicle 的成员中。</p>
+<p>如果尝试将第 33 行改为：</p>
+<pre><code class="go">a.Show()
+</code></pre>
+<p>编译器将发生报错：</p>
+<pre><code class="sh">ambiguous selector a.Show
+</code></pre>
+<p>在调用 Show() 方法时，因为两个类型都有 Show() 方法，会发生歧义，证明 FakeBrand 的本质确实是 Brand 类型。</p>
+<blockquote>
+<p>搬运于<a target="_blank" rel="noopener" href="http://c.biancheng.net/">C语言中文网</a></p>
+</blockquote>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/Golang/">Golang</a></div></article><div class="article-copyright"><p>标题: <a href="/2022/12/25/020-Go%E8%AF%AD%E8%A8%80type%E5%85%B3%E9%94%AE%E5%AD%97%EF%BC%88%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%EF%BC%89/">020-Go语言type关键字（类型别名）</a></p><p> 链接: <a href="/2022/12/25/020-Go%E8%AF%AD%E8%A8%80type%E5%85%B3%E9%94%AE%E5%AD%97%EF%BC%88%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%EF%BC%89/">http://cwang110.github.io/2022/12/25/020-Go%E8%AF%AD%E8%A8%80type%E5%85%B3%E9%94%AE%E5%AD%97%EF%BC%88%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%EF%BC%89/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2022/12/25/005-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E7%9A%84%E5%A3%B0%E6%98%8E/"
+  style="background-image:url(/assets/images/random/17.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>005-Go语言变量的声明</p>
+  </div>
+</a>
+<a class="page_down" href="/2022/12/25/019-Go%E8%AF%AD%E8%A8%80%E5%B8%B8%E9%87%8F/"
+style="background-image:url(/assets/images/random/26.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>019-Go语言常量</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#020-Go%E8%AF%AD%E8%A8%80type%E5%85%B3%E9%94%AE%E5%AD%97%EF%BC%88%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">020-Go语言type关键字（类型别名）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E5%88%86%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%E4%B8%8E%E7%B1%BB%E5%9E%8B%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">区分类型别名与类型定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E6%9C%AC%E5%9C%B0%E7%B1%BB%E5%9E%8B%E4%B8%8D%E8%83%BD%E5%AE%9A%E4%B9%89%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.</span> <span class="toc-text">非本地类型不能定义方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E7%BB%93%E6%9E%84%E4%BD%93%E6%88%90%E5%91%98%E5%B5%8C%E5%85%A5%E6%97%B6%E4%BD%BF%E7%94%A8%E5%88%AB%E5%90%8D"><span class="toc-number">1.3.</span> <span class="toc-text">在结构体成员嵌入时使用别名</span></a></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

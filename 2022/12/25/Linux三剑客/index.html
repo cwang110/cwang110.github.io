@@ -1,0 +1,853 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>Linux三剑客 | Rindemon</title><meta name="keywords" content="shell"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">Linux三剑客</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="Linux三剑客"><a href="#Linux三剑客" class="headerlink" title="Linux三剑客"></a>Linux三剑客</h1><h2 id="大纲"><a href="#大纲" class="headerlink" title="大纲"></a>大纲</h2><ul>
+<li>正则表达式<ul>
+<li>是什么？应用场景</li>
+<li>正则注意事项</li>
+<li>规则</li>
+</ul>
+</li>
+<li>三剑客grep</li>
+<li>三剑客sed</li>
+<li>三剑客awk</li>
+</ul>
+<h2 id="1-正则表达式"><a href="#1-正则表达式" class="headerlink" title="1.正则表达式"></a>1.正则表达式</h2><h3 id="1-1什么是正则表达式"><a href="#1-1什么是正则表达式" class="headerlink" title="1.1什么是正则表达式"></a>1.1什么是正则表达式</h3><ul>
+<li>匹配<font color=red>有规律的</font>东西：手机号、身份证、匹配日志</li>
+<li>正则表达式，regular expression（RE）</li>
+<li>使用一些符号表达重复出现、大小写、开头&#x2F;结尾含义</li>
+</ul>
+<h3 id="1-2应用场景"><a href="#1-2应用场景" class="headerlink" title="1.2应用场景"></a>1.2应用场景</h3><table>
+<thead>
+<tr>
+<th>正则表达式</th>
+<th>Linux三剑客支持,开发语言（python,Golang等）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>应用场景</td>
+<td>过滤有规律的内容，尤其是日志</td>
+</tr>
+</tbody></table>
+<h3 id="1-3正则表达式注意事项"><a href="#1-3正则表达式注意事项" class="headerlink" title="1.3正则表达式注意事项"></a>1.3正则表达式注意事项</h3><ul>
+<li>所有的符号都是英文</li>
+<li>学习正则，通过grep命令学习，给grep加上单引号</li>
+<li>给grep，egrep加上颜色<code>alisa grep=&#39;grep --color=auto&#39;</code> <code>alias egrep=&#39;egrep --color=auto&#39;</code></li>
+<li>注意系统的字符集:en_US.UTF-8(大部分情况)，如果出现问题修改字符集为<code>export LANG=C</code></li>
+<li>快速掌握正则:配合grep -o参数学习</li>
+</ul>
+<h3 id="1-4正则表达式符号"><a href="#1-4正则表达式符号" class="headerlink" title="1.4正则表达式符号"></a>1.4正则表达式符号</h3><table>
+<thead>
+<tr>
+<th>分类</th>
+<th>具体符号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基础正则</td>
+<td>^ $ ^$ . <em>.</em> [a-z]  [^abc]</td>
+</tr>
+<tr>
+<td>扩展正则</td>
+<td>+ | {} ?</td>
+</tr>
+</tbody></table>
+<h3 id="1-5正则VS通配符"><a href="#1-5正则VS通配符" class="headerlink" title="1.5正则VS通配符"></a>1.5正则VS通配符</h3><table>
+<thead>
+<tr>
+<th>分类</th>
+<th>诞生目标(用途)</th>
+<th>支持的命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>正则</td>
+<td>三剑客,高级语言,进行过滤(匹配字符)</td>
+<td>三剑客<font color=red>grep,sed,awk</font>,find,rename(ubuntu).expr</td>
+</tr>
+<tr>
+<td>通配符(pathname extension或glob)</td>
+<td>匹配文件(文件名) <em>.txt</em>.log</td>
+<td>linux下大部分命令都支持</td>
+</tr>
+</tbody></table>
+<h3 id="1-6基础正则"><a href="#1-6基础正则" class="headerlink" title="1.6基础正则"></a>1.6基础正则</h3><h4 id="1-6-1-以…开头的行"><a href="#1-6-1-以…开头的行" class="headerlink" title="1.6.1 ^以…开头的行"></a>1.6.1 ^以…开头的行</h4><ul>
+<li><code>grep &#39;^wangc.com&#39; wangc.txt</code></li>
+</ul>
+<h4 id="1-6-2-以…结尾的行"><a href="#1-6-2-以…结尾的行" class="headerlink" title="1.6.2 $ 以…结尾的行"></a>1.6.2 $ 以…结尾的行</h4><ul>
+<li><p><code>grep &#39;wangc.com$&#39; wangc.txt</code></p>
+</li>
+<li><p><code>cat -A</code> 可以显示文件中隐藏的字符</p>
+</li>
+</ul>
+<h4 id="1-6-3-空行"><a href="#1-6-3-空行" class="headerlink" title="1.6.3 ^$ 空行"></a>1.6.3 ^$ 空行</h4><ul>
+<li>这一行中没有任何内容(空格也是内容)</li>
+<li><code>grep -v</code>排除 <code>grep -n</code>显示行号 <code>grep -o</code>可以显示过程</li>
+<li><code>grep -nv &#39;^$&#39; wangc.txt</code></li>
+</ul>
+<h4 id="1-6-4-点-表示任意一个字符"><a href="#1-6-4-点-表示任意一个字符" class="headerlink" title="1.6.4 .(点)表示任意一个字符"></a>1.6.4 .(点)表示任意一个字符</h4><ul>
+<li>注意:.(点)不匹配空行</li>
+<li><code>grep &#39;.&#39; wangc.txt</code></li>
+</ul>
+<h4 id="1-6-5-转义字符"><a href="#1-6-5-转义字符" class="headerlink" title="1.6.5 \ 转义字符"></a>1.6.5 \ 转义字符</h4><ul>
+<li>\n 回车换行</li>
+<li>\t tab键</li>
+<li>特殊符号需要使用转义字符</li>
+</ul>
+<h4 id="1-6-6-前一个字符连续出现0次或0次以上"><a href="#1-6-6-前一个字符连续出现0次或0次以上" class="headerlink" title="1.6.6 * 前一个字符连续出现0次或0次以上"></a>1.6.6 * 前一个字符连续出现0次或0次以上</h4><ul>
+<li>连续出现:0(0出现一次) 00(0出现2次) 00000(0出现5次) wangc(字母出现了5次)</li>
+</ul>
+<pre><code class="sh">[root@nas01 ~]# grep &#39;s*&#39; backup.sh 
+#!/bin/bash
+ftpserver=&quot;ip_address&quot;
+user=&quot;user&quot;
+passwd=&quot;passwd&quot;
+Wpath=&quot;path&quot;
+ftp -n -v $ftpserver &lt;&lt; EOF
+user $user $passwd
+bin
+put /opt/1.txt $Wpath/1.txt
+bye
+EOF
+</code></pre>
+<h4 id="1-6-7-所有内容-任何内容-任意内容"><a href="#1-6-7-所有内容-任何内容-任意内容" class="headerlink" title="1.6.7 .*所有内容,任何内容,任意内容"></a>1.6.7 .*所有内容,任何内容,任意内容</h4><pre><code class="sh">grep &#39;.*&#39; backup.sh
+</code></pre>
+<pre><code class="sh">grep &#39;^.*t&#39; backup.sh
+</code></pre>
+<ul>
+<li>正则表达式的贪婪性:<strong>表示所有</strong>或连续出现的时候,表现尽可能的贪婪匹配</li>
+</ul>
+<h4 id="1-6-8-abc-1次匹配一个字符-匹配任何一个字符-a或b或c"><a href="#1-6-8-abc-1次匹配一个字符-匹配任何一个字符-a或b或c" class="headerlink" title="1.6.8 [] [abc] 1次匹配一个字符,匹配任何一个字符(a或b或c)"></a>1.6.8 [] [abc] 1次匹配一个字符,匹配任何一个字符(a或b或c)</h4><ul>
+<li><code>grep -o</code>可以显示匹配过程</li>
+<li><code>grep -i</code>不区分大小写</li>
+</ul>
+<pre><code class="sh">[root@nas01 ~]# grep &#39;[awc]&#39; backup.sh 
+[root@nas01 ~]# grep -o &#39;[awc]&#39; backup.sh 
+[root@nas01 ~]# grep &#39;[A-Z]&#39; backup.sh
+</code></pre>
+<ul>
+<li><p>匹配文件中的大小写字母和数字<code>[root@nas01 ~]# grep &#39;[a-Z0-9]&#39; backup.sh</code></p>
+</li>
+<li><p><strong>[]中的内容会被去掉特殊含义</strong></p>
+</li>
+</ul>
+<h4 id="1-6-9-abc-取反-排除-排除a或b或c的内容-匹配a或b或c以外的内容"><a href="#1-6-9-abc-取反-排除-排除a或b或c的内容-匹配a或b或c以外的内容" class="headerlink" title="1.6.9 [^abc] 取反,排除 排除a或b或c的内容,匹配a或b或c以外的内容"></a>1.6.9 [^abc] 取反,排除 排除a或b或c的内容,匹配a或b或c以外的内容</h4><h3 id="1-7-总结"><a href="#1-7-总结" class="headerlink" title="1.7 总结"></a>1.7 总结</h3><table>
+<thead>
+<tr>
+<th>基础正则 Basic RE (BRE)</th>
+<th>含义</th>
+<th>搭配</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>^</td>
+<td>以…开头的行 ^wangc</td>
+<td></td>
+</tr>
+<tr>
+<td>$</td>
+<td>以…结尾的行 wangc$</td>
+<td></td>
+</tr>
+<tr>
+<td>^$</td>
+<td>空行</td>
+<td>搭配^$</td>
+</tr>
+<tr>
+<td>.</td>
+<td>任意一个字符</td>
+<td></td>
+</tr>
+<tr>
+<td>*</td>
+<td>前一个字符连续出现(重复)0次或者0次以上</td>
+<td></td>
+</tr>
+<tr>
+<td>.*</td>
+<td>所有内容</td>
+<td>搭配.*</td>
+</tr>
+<tr>
+<td>\</td>
+<td>转移字符 \n \t</td>
+<td></td>
+</tr>
+<tr>
+<td>[]</td>
+<td>一个整体,匹配任意一个符号[abc],a或b或c</td>
+<td>[]与 +搭配</td>
+</tr>
+<tr>
+<td>[^]</td>
+<td>取反排除</td>
+<td></td>
+</tr>
+<tr>
+<td>贪婪性</td>
+<td>.*或连续出现</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="1-8-扩展正则"><a href="#1-8-扩展正则" class="headerlink" title="1.8 扩展正则"></a>1.8 扩展正则</h3><p>扩展正则需要<code>egrep</code>或者<code>grep -E</code></p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>+</td>
+<td>前一个字符连续出现了1次或1次以上</td>
+</tr>
+<tr>
+<td>|</td>
+<td>或者</td>
+</tr>
+<tr>
+<td>()</td>
+<td>一个整体.sed反向引用</td>
+</tr>
+<tr>
+<td>{}</td>
+<td>连续出现 o(n,m)前一个字母o至少连续出现n次,至多连续出现m次</td>
+</tr>
+<tr>
+<td>?</td>
+<td>连续出现 前一个字符出现0次或者1次</td>
+</tr>
+</tbody></table>
+<h4 id="1-8-1-前一个字符连续出现了1次或1次以上"><a href="#1-8-1-前一个字符连续出现了1次或1次以上" class="headerlink" title="1.8.1 + 前一个字符连续出现了1次或1次以上"></a>1.8.1 + 前一个字符连续出现了1次或1次以上</h4><pre><code class="sh">[root@nas01 ~]# grep &#39;c+&#39; backup.sh 
+[root@nas01 ~]# grep -E &#39;c+&#39; backup.sh 
+user=&quot;wc&quot;
+[root@nas01 ~]# egrep &#39;c+&#39; backup.sh 
+user=&quot;wc&quot;
+[root@nas01 ~]# 
+</code></pre>
+<h4 id="1-8-2-或者"><a href="#1-8-2-或者" class="headerlink" title="1.8.2 | 或者"></a>1.8.2 | 或者</h4><pre><code class="sh">[root@nas01 ~]# egrep &#39;ft|us&#39; backup.sh 
+ftpserver=&quot;192.168.1.2&quot;
+user=&quot;wc&quot;
+ftp -n -v $ftpserver &lt;&lt; EOF
+user $user $passwd
+[root@nas01 ~]# 
+</code></pre>
+<p>1.8.3 () 被括起来的内容,表示一个整体(一个字符)反向引用(反向引用sed)</p>
+<pre><code class="sh">[root@nas01 ~]# egrep  &#39;pa(s|th)&#39; backup.sh 
+passwd=&quot;123456&quot;
+Wpath=&quot;test&quot;
+user $user $passwd
+put /opt/1.txt $Wpath/1.txt
+</code></pre>
+<h4 id="1-8-4-连续出现-o-n-m-前一个字母o至少连续出现n次-至多连续出现m次"><a href="#1-8-4-连续出现-o-n-m-前一个字母o至少连续出现n次-至多连续出现m次" class="headerlink" title="1.8.4 {}连续出现 o(n,m)前一个字母o至少连续出现n次,至多连续出现m次"></a>1.8.4 {}连续出现 o(n,m)前一个字母o至少连续出现n次,至多连续出现m次</h4><table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>o(n,m)</td>
+<td>前一个字母o至少连续出现n次,至多连续出现m次</td>
+<td>&gt;&#x3D;n &lt;&#x3D;m</td>
+</tr>
+<tr>
+<td>o(n)</td>
+<td>前一个字母o连续出现n次</td>
+<td>&#x3D;&#x3D;n</td>
+</tr>
+<tr>
+<td>o(n,)</td>
+<td>前一个字母o至少连续出现n次</td>
+<td>&gt;&#x3D;n</td>
+</tr>
+<tr>
+<td>o(,m)</td>
+<td>前一个字母o最多连续出现m次</td>
+<td>&lt;&#x3D;m</td>
+</tr>
+</tbody></table>
+<h4 id="1-8-4-连续出现-前一个字符出现0次或者1次"><a href="#1-8-4-连续出现-前一个字符出现0次或者1次" class="headerlink" title="1.8.4 ? 连续出现 前一个字符出现0次或者1次"></a>1.8.4 ? 连续出现 前一个字符出现0次或者1次</h4><pre><code class="sh">[root@nas01 ~]# cat wc.txt 
+goooood
+good
+god
+gd
+gooood
+[root@nas01 ~]# egrep &#39;go?d&#39; wc.txt 
+god
+gd
+[root@nas01 ~]# 
+</code></pre>
+<h2 id="2-三剑客"><a href="#2-三剑客" class="headerlink" title="2.三剑客"></a>2.三剑客</h2><h3 id="2-1-三剑客特点及应用场景"><a href="#2-1-三剑客特点及应用场景" class="headerlink" title="2.1 三剑客特点及应用场景"></a>2.1 三剑客特点及应用场景</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>特点</th>
+<th>场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>grep</td>
+<td>过滤</td>
+<td>grep命令过滤速度是最快的</td>
+</tr>
+<tr>
+<td>sed</td>
+<td>替换,修改文件内容,取行</td>
+<td>进行替换,修改文件<br/>取出某个范围的内容(从早上1:00到2:00)</td>
+</tr>
+<tr>
+<td>awk</td>
+<td>取列,统计计算</td>
+<td>取列<br/>对比,比较 &gt;&#x3D; &lt;&#x3D; !&#x3D; &lt; &gt;<br>统计,计算(awk数组)</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-三剑客之grep"><a href="#2-2-三剑客之grep" class="headerlink" title="2.2 三剑客之grep"></a>2.2 三剑客之grep</h3><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-E</td>
+<td>&#x3D;&#x3D; egrep 支持拓展正则</td>
+</tr>
+<tr>
+<td>-A</td>
+<td>after -A5 匹配你要的内容并且显示接下来的5行</td>
+</tr>
+<tr>
+<td>-B</td>
+<td>before -B5 匹配你要的内容并且显示上面的5行</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>context 上下 -C5 匹配你要的内容并且上下的5行</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>统计出现了多少行 类似于wc -l</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>取反,排除</td>
+</tr>
+<tr>
+<td>-w</td>
+<td>精确匹配,加上\b**b\或者\&lt;**\&gt;可以表示边界</td>
+</tr>
+</tbody></table>
+<pre><code class="sh">#特殊写法
+[root@nas01 ~]# ps -ef | grep -c &#39;[s]shd&#39;
+2
+#此方式可以过滤掉grep执行时产生的进程
+#执行时为grep &#39;[s]shd&#39;
+#匹配的是sshd,故可过滤自身
+</code></pre>
+<h3 id="2-3三剑客之sed"><a href="#2-3三剑客之sed" class="headerlink" title="2.3三剑客之sed"></a>2.3三剑客之sed</h3><ul>
+<li><p>sed stream editor 流编辑器,sed把处理的内容或文件当作是水,源源不断的进行处理,知道文件末尾</p>
+</li>
+<li><p>sed格式</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>参数&#x2F;选项</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>sed</td>
+<td>-r(支持拓展正则)</td>
+<td>‘spd#’</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+</li>
+<li><p>sed命令核心功能:增删改查</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>s</td>
+<td>替换substitute sub</td>
+</tr>
+<tr>
+<td>p</td>
+<td>显示print</td>
+</tr>
+<tr>
+<td>d</td>
+<td>删除delete</td>
+</tr>
+<tr>
+<td>cai</td>
+<td>增加c&#x2F;a&#x2F;i</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>sed命令的执行过程</p>
+<ul>
+<li>“找谁干啥”</li>
+</ul>
+</li>
+<li><p>sed核心应用</p>
+</li>
+</ul>
+<p>1)sed-查找p</p>
+<table>
+<thead>
+<tr>
+<th>查找格式</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‘2p’</td>
+<td>精确查找</td>
+<td></td>
+</tr>
+<tr>
+<td>‘1,5p’</td>
+<td>指定行号范围</td>
+<td></td>
+</tr>
+<tr>
+<td>‘&#x2F;内容&#x2F;p’</td>
+<td>类似于grep过滤,&#x2F;&#x2F;里面可以写正则</td>
+<td></td>
+</tr>
+<tr>
+<td>‘&#x2F;10:00&#x2F;,&#x2F;11:00&#x2F;p’</td>
+<td>表示范围的过滤</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>2)sed删除d</p>
+<table>
+<thead>
+<tr>
+<th>查找格式</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‘2d’</td>
+<td>删除第三行</td>
+<td></td>
+</tr>
+<tr>
+<td>‘1,5d’</td>
+<td>删除指定行号范围</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>案例:删除文件中的空行和包含#好的行</p>
+<pre><code class="sh">egrep -v &#39;^$|#&#39; /etc/ssh/sshd_config
+sed -r &#39;/^$|#/d&#39; /etc/ssh/sshd_config
+#!的妙用
+[root@nas01 ~]# sed -nr &#39;/^$|#/!p&#39; /etc/ssh/sshd_config 
+#遇到空行或者#开头的行不显示
+</code></pre>
+<p>3)sed增加cai</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>c</td>
+<td>replace替换这一行的内容</td>
+<td></td>
+</tr>
+<tr>
+<td>a</td>
+<td>append追加,向指定的行或每一行最佳内容</td>
+<td></td>
+</tr>
+<tr>
+<td>i</td>
+<td>insert插入,向指定的行或每一行插入内容(行前)</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>案例:向config文件追加</p>
+<pre><code class="sh">UserDNS no
+GSSAPIAUTCATION no
+PermitRootLogin no
+#方法一
+cat &gt;&gt;config&lt;&lt;&#39;EOF&#39;
+UserDNS no
+GSSAPIAUTCATION no
+PermitRootLogin no
+EOF
+
+#方法二:sed
+sed &#39;$a UserDNS no\nGSSAPIAUTCATION no\nPermitRootLogin no&#39; config
+</code></pre>
+<p>4)sed替换s</p>
+<p>s–&gt;sub substitute</p>
+<p>g–&gt;global全局替换,sed默认替换每行第一个匹配到的内容</p>
+<table>
+<thead>
+<tr>
+<th>替换格式(sg三个无特殊含义的相同字符)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>s###g(例如s#1234#1232#g的含义为将1234替换为1232)</td>
+</tr>
+<tr>
+<td>s@@@g</td>
+</tr>
+<tr>
+<td>s&#x2F;&#x2F;&#x2F;g</td>
+</tr>
+</tbody></table>
+<p>后向引用.反向引用:先保护(使用小括号保护起来),后引用\n  (\n为第几个小括号)</p>
+<pre><code class="shell">[root@nas01 ~]# echo 123456 |sed -r &#39;s#(.*)#&lt;\1&gt;#g&#39;
+&lt;123456&gt;
+[root@nas01 ~]# echo 123456 |sed -r &#39;s#([1])#&lt;\1&gt;#g&#39;
+&lt;1&gt;23456
+[root@nas01 ~]# echo 12a3c45gg6 |sed -r &#39;s#([0-9])#&lt;\1&gt;#g&#39;
+&lt;1&gt;&lt;2&gt;a&lt;3&gt;c&lt;4&gt;&lt;5&gt;gg&lt;6&gt;
+</code></pre>
+<p>5)sed中引用变量</p>
+<pre><code class="sh">#需要使用双引号
+sed -i &quot;s/$&#123;a&#125;/cc/g&quot; text.txt
+</code></pre>
+<h3 id="2-4-三剑客之awk"><a href="#2-4-三剑客之awk" class="headerlink" title="2.4 三剑客之awk"></a>2.4 三剑客之awk</h3><ul>
+<li>特点及应用场景</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>awk</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>一门语言</td>
+<td></td>
+</tr>
+<tr>
+<td>过滤,统计,计算</td>
+<td></td>
+</tr>
+<tr>
+<td>过滤,统计日志</td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li>执行过程</li>
+</ul>
+<pre><code class="sh">awk -F,&#39;BEGIN&#123;print &quot;name&quot;&#125;&#123;print $2&#125;END&#123;print &quot;end of file&quot;&#125;&#39; test.txt
+</code></pre>
+<ul>
+<li>行与列</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>名词</th>
+<th>awk中叫法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>行</td>
+<td>记录record</td>
+<td>每一行默认通过回车分割</td>
+</tr>
+<tr>
+<td>列</td>
+<td>字段.域 field</td>
+<td>每一列通过空格分割</td>
+</tr>
+<tr>
+<td>awk中行和列结束标记都是可以修改的</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li>取行</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>awk</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NR&#x3D;&#x3D;1</td>
+<td>取出某一行</td>
+<td></td>
+</tr>
+<tr>
+<td>NR&gt;&#x3D;1&amp;&amp;NR&lt;&#x3D;5</td>
+<td>取出1到5行</td>
+<td></td>
+</tr>
+<tr>
+<td>符号</td>
+<td>&gt; &lt; &gt;&#x3D; &lt;&#x3D; &#x3D;&#x3D; !&#x3D;</td>
+<td></td>
+</tr>
+<tr>
+<td>&#x2F;wangc&#x2F;</td>
+<td>匹配关键字的行</td>
+<td></td>
+</tr>
+<tr>
+<td>&#x2F;wc&#x2F;,&#x2F;LL&#x2F;</td>
+<td>从&#x2F;wc&#x2F;行到&#x2F;LL&#x2F;行</td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li>取列</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>-F</th>
+<th>指定分隔符</th>
+<th>指定每一列的结束标记(默认是空格&#x2F;tab和连续空格)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$数字</td>
+<td>取出某一列</td>
+<td>注意在awk中$内容</td>
+</tr>
+<tr>
+<td>$0</td>
+<td>取整行</td>
+<td></td>
+</tr>
+<tr>
+<td>{print xxx}</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>$NF</td>
+<td>表示最后一列</td>
+<td></td>
+</tr>
+</tbody></table>
+<pre><code class="sh">[root@nas01 ~]# docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED      STATUS      PORTS     NAMES
+7d2f8cf02d19   nginx     &quot;/docker-entrypoint.…&quot;   6 days ago   Up 6 days   80/tcp    determined_moore
+[root@nas01 ~]# docker ps -a | awk &#39;&#123;print $1&#125;&#39;
+CONTAINER
+7d2f8cf02d19
+[root@nas01 ~]# docker ps -a |grep &#39;nginx&#39; | awk &#39;&#123;print $1&#125;&#39;
+7d2f8cf02d19
+[root@nas01 ~]# docker ps -a | awk &#39;&#123;print $1,$2&#125;&#39; | column -t
+CONTAINER     ID
+7d2f8cf02d19  nginx
+</code></pre>
+<p>column -t 将文本对齐</p>
+<ul>
+<li>内置变量</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>NR</th>
+<th>Number of Record</th>
+<th>行号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NF</td>
+<td>Number of Field</td>
+<td></td>
+</tr>
+<tr>
+<td>FS</td>
+<td>-F:  &#x3D;&#x3D;&#x3D; -v FS&#x3D;: Field Separator字段分隔符,每个字段结束标记</td>
+<td></td>
+</tr>
+<tr>
+<td>OFS</td>
+<td>Output Field Separator 输出字段分隔符</td>
+<td></td>
+</tr>
+</tbody></table>
+<pre><code class="shell">[root@nas01 ~]# awk -F: &#39;&#123;print $NF,$2,$3,$1&#125;&#39; /etc/passwd
+/bin/bash x 0 root
+/sbin/nologin x 1 bin
+/sbin/nologin x 2 daemon
+/sbin/nologin x 3 adm
+/sbin/nologin x 4 lp
+/bin/sync x 5 sync
+/sbin/shutdown x 6 shutdown
+/sbin/halt x 7 halt
+/sbin/nologin x 8 mail
+/sbin/nologin x 11 operator
+/sbin/nologin x 12 games
+/sbin/nologin x 14 ftp
+/sbin/nologin x 99 nobody
+/sbin/nologin x 192 systemd-network
+/sbin/nologin x 81 dbus
+/sbin/nologin x 999 polkitd
+/sbin/nologin x 74 sshd
+/sbin/nologin x 89 postfix
+/sbin/nologin x 25 named
+/sbin/nologin x 38 ntp
+[root@nas01 ~]# awk -F: -vOFS=:&#39;&#123;print $NF,$2,$3,$1&#125;&#39; /etc/passwd
+^C
+[root@nas01 ~]# awk -F: -vOFS=: &#39;&#123;print $NF,$2,$3,$1&#125;&#39; /etc/passwd
+/bin/bash:x:0:root
+/sbin/nologin:x:1:bin
+/sbin/nologin:x:2:daemon
+/sbin/nologin:x:3:adm
+/sbin/nologin:x:4:lp
+/bin/sync:x:5:sync
+/sbin/shutdown:x:6:shutdown
+/sbin/halt:x:7:halt
+/sbin/nologin:x:8:mail
+/sbin/nologin:x:11:operator
+/sbin/nologin:x:12:games
+/sbin/nologin:x:14:ftp
+/sbin/nologin:x:99:nobody
+/sbin/nologin:x:192:systemd-network
+/sbin/nologin:x:81:dbus
+/sbin/nologin:x:999:polkitd
+/sbin/nologin:x:74:sshd
+/sbin/nologin:x:89:postfix
+/sbin/nologin:x:25:named
+/sbin/nologin:x:38:ntp
+</code></pre>
+<ul>
+<li>awk模式匹配<ul>
+<li>比较符号:</li>
+<li>正则</li>
+<li>范围 表达式</li>
+<li>特殊条件:BEGAN和END</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>awk</th>
+<th>-F”[ &#x2F;]+”</th>
+<th>‘NR&#x3D;&#x3D;3{print $3}</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令</td>
+<td>选项</td>
+<td>‘条件(动作)’</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>‘找谁(干啥)’</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>‘模式(动作)’</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>‘pattern(action)’</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>正则</th>
+<th>awk正则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>^ 表示以…开头的行</td>
+<td>某一列的开头 $3~&#x2F;^wc&#x2F;</td>
+</tr>
+<tr>
+<td>$ 表示以…结尾的行</td>
+<td>某一列的结尾 $2~&#x2F;wcLL$&#x2F;</td>
+</tr>
+<tr>
+<td>^$ 表示空行</td>
+<td>某一列是空的</td>
+</tr>
+</tbody></table>
+<pre><code class="sh">[root@nas01 ~]# cat wc.txt 
+http://www.wangc.com/index.html
+http://dns.wangc.com/i1.html
+http://servers.wangc.com/dns.html
+http://dns.wangc.com/2.html
+http://www.wangc.com/error.html
+http://www.wangc.com/i505.html
+[root@nas01 ~]# awk -F&#39;[/.]+&#39; &#39;&#123;array[$2]++&#125;END&#123;for(i in array)print i,array[i]&#125;&#39; wc.txt 
+servers 1
+www 3
+dns 2
+[root@nas01 ~]# awk -F&#39;[/.]+&#39; &#39;&#123;array[$2]++&#125;END&#123;for(i in array)print &quot;域名&quot;,i,&quot;次数&quot;,array[i]&#125;&#39; wc.txt 
+域名 servers 次数 1
+域名 www 次数 3
+域名 dns 次数 2
+[root@nas01 ~]# awk -F&#39;[/.]+&#39; &#39;&#123;array[$2]++&#125;END&#123;for(i in array)print &quot;域名&quot;,i,&quot;次数&quot;,array[i]&#125;&#39; wc.txt | sort -snk4
+域名 servers 次数 1
+域名 dns 次数 2
+域名 www 次数 3
+</code></pre>
+<ul>
+<li>awk使用多个条件的时候,第一个条件一般使用’条件{动作}’,其他条件则使用if语句</li>
+</ul>
+<p>awk [options] [BEGIN]{program}[END] [file]</p>
+<pre><code class="sh">常用命令
+-F fs 指定秒回一行数据字段的文件分隔符 默认为空格
+-f file
+</code></pre>
+<p>内置变量</p>
+<p>$0 表示整行</p>
+<p>$1 表示文本行的第一个数据字段</p>
+<p>$2 表示第二个数据字段</p>
+<p>$N 表示第N个数据字段</p>
+<p>$NF 表示文本的最后一个数据字段</p>
+<p>NR 指定行号</p>
+<pre><code class="sh">NR==1
+</code></pre>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/shell/">shell</a></div></article><div class="article-copyright"><p>标题: <a href="/2022/12/25/Linux%E4%B8%89%E5%89%91%E5%AE%A2/">Linux三剑客</a></p><p> 链接: <a href="/2022/12/25/Linux%E4%B8%89%E5%89%91%E5%AE%A2/">http://cwang110.github.io/2022/12/25/Linux%E4%B8%89%E5%89%91%E5%AE%A2/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2022/12/25/006-Go%E8%AF%AD%E8%A8%80%E5%8F%98%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96/"
+  style="background-image:url(/assets/images/random/32.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>006-Go语言变量初始化</p>
+  </div>
+</a>
+<a class="page_down" href="/2022/12/27/python%E5%B0%8F%E7%AC%94%E8%AE%B0/"
+style="background-image:url(/assets/images/random/3.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>Python小笔记</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux%E4%B8%89%E5%89%91%E5%AE%A2"><span class="toc-number">1.</span> <span class="toc-text">Linux三剑客</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E7%BA%B2"><span class="toc-number">1.1.</span> <span class="toc-text">大纲</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">1.2.</span> <span class="toc-text">1.正则表达式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1%E4%BB%80%E4%B9%88%E6%98%AF%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.1什么是正则表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.2.2.</span> <span class="toc-text">1.2应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">1.2.3.</span> <span class="toc-text">1.3正则表达式注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%AC%A6%E5%8F%B7"><span class="toc-number">1.2.4.</span> <span class="toc-text">1.4正则表达式符号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5%E6%AD%A3%E5%88%99VS%E9%80%9A%E9%85%8D%E7%AC%A6"><span class="toc-number">1.2.5.</span> <span class="toc-text">1.5正则VS通配符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6%E5%9F%BA%E7%A1%80%E6%AD%A3%E5%88%99"><span class="toc-number">1.2.6.</span> <span class="toc-text">1.6基础正则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-1-%E4%BB%A5%E2%80%A6%E5%BC%80%E5%A4%B4%E7%9A%84%E8%A1%8C"><span class="toc-number">1.2.6.1.</span> <span class="toc-text">1.6.1 ^以…开头的行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-2-%E4%BB%A5%E2%80%A6%E7%BB%93%E5%B0%BE%E7%9A%84%E8%A1%8C"><span class="toc-number">1.2.6.2.</span> <span class="toc-text">1.6.2 $ 以…结尾的行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-3-%E7%A9%BA%E8%A1%8C"><span class="toc-number">1.2.6.3.</span> <span class="toc-text">1.6.3 ^$ 空行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-4-%E7%82%B9-%E8%A1%A8%E7%A4%BA%E4%BB%BB%E6%84%8F%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6"><span class="toc-number">1.2.6.4.</span> <span class="toc-text">1.6.4 .(点)表示任意一个字符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-5-%E8%BD%AC%E4%B9%89%E5%AD%97%E7%AC%A6"><span class="toc-number">1.2.6.5.</span> <span class="toc-text">1.6.5 \ 转义字符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-6-%E5%89%8D%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6%E8%BF%9E%E7%BB%AD%E5%87%BA%E7%8E%B00%E6%AC%A1%E6%88%960%E6%AC%A1%E4%BB%A5%E4%B8%8A"><span class="toc-number">1.2.6.6.</span> <span class="toc-text">1.6.6 * 前一个字符连续出现0次或0次以上</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-7-%E6%89%80%E6%9C%89%E5%86%85%E5%AE%B9-%E4%BB%BB%E4%BD%95%E5%86%85%E5%AE%B9-%E4%BB%BB%E6%84%8F%E5%86%85%E5%AE%B9"><span class="toc-number">1.2.6.7.</span> <span class="toc-text">1.6.7 .*所有内容,任何内容,任意内容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-8-abc-1%E6%AC%A1%E5%8C%B9%E9%85%8D%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6-%E5%8C%B9%E9%85%8D%E4%BB%BB%E4%BD%95%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6-a%E6%88%96b%E6%88%96c"><span class="toc-number">1.2.6.8.</span> <span class="toc-text">1.6.8 [] [abc] 1次匹配一个字符,匹配任何一个字符(a或b或c)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-9-abc-%E5%8F%96%E5%8F%8D-%E6%8E%92%E9%99%A4-%E6%8E%92%E9%99%A4a%E6%88%96b%E6%88%96c%E7%9A%84%E5%86%85%E5%AE%B9-%E5%8C%B9%E9%85%8Da%E6%88%96b%E6%88%96c%E4%BB%A5%E5%A4%96%E7%9A%84%E5%86%85%E5%AE%B9"><span class="toc-number">1.2.6.9.</span> <span class="toc-text">1.6.9 [^abc] 取反,排除 排除a或b或c的内容,匹配a或b或c以外的内容</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-7-%E6%80%BB%E7%BB%93"><span class="toc-number">1.2.7.</span> <span class="toc-text">1.7 总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-8-%E6%89%A9%E5%B1%95%E6%AD%A3%E5%88%99"><span class="toc-number">1.2.8.</span> <span class="toc-text">1.8 扩展正则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-8-1-%E5%89%8D%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6%E8%BF%9E%E7%BB%AD%E5%87%BA%E7%8E%B0%E4%BA%861%E6%AC%A1%E6%88%961%E6%AC%A1%E4%BB%A5%E4%B8%8A"><span class="toc-number">1.2.8.1.</span> <span class="toc-text">1.8.1 + 前一个字符连续出现了1次或1次以上</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-8-2-%E6%88%96%E8%80%85"><span class="toc-number">1.2.8.2.</span> <span class="toc-text">1.8.2 | 或者</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-8-4-%E8%BF%9E%E7%BB%AD%E5%87%BA%E7%8E%B0-o-n-m-%E5%89%8D%E4%B8%80%E4%B8%AA%E5%AD%97%E6%AF%8Do%E8%87%B3%E5%B0%91%E8%BF%9E%E7%BB%AD%E5%87%BA%E7%8E%B0n%E6%AC%A1-%E8%87%B3%E5%A4%9A%E8%BF%9E%E7%BB%AD%E5%87%BA%E7%8E%B0m%E6%AC%A1"><span class="toc-number">1.2.8.3.</span> <span class="toc-text">1.8.4 {}连续出现 o(n,m)前一个字母o至少连续出现n次,至多连续出现m次</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-8-4-%E8%BF%9E%E7%BB%AD%E5%87%BA%E7%8E%B0-%E5%89%8D%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6%E5%87%BA%E7%8E%B00%E6%AC%A1%E6%88%96%E8%80%851%E6%AC%A1"><span class="toc-number">1.2.8.4.</span> <span class="toc-text">1.8.4 ? 连续出现 前一个字符出现0次或者1次</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%89%E5%89%91%E5%AE%A2"><span class="toc-number">1.3.</span> <span class="toc-text">2.三剑客</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%89%E5%89%91%E5%AE%A2%E7%89%B9%E7%82%B9%E5%8F%8A%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 三剑客特点及应用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%B8%89%E5%89%91%E5%AE%A2%E4%B9%8Bgrep"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 三剑客之grep</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3%E4%B8%89%E5%89%91%E5%AE%A2%E4%B9%8Bsed"><span class="toc-number">1.3.3.</span> <span class="toc-text">2.3三剑客之sed</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E4%B8%89%E5%89%91%E5%AE%A2%E4%B9%8Bawk"><span class="toc-number">1.3.4.</span> <span class="toc-text">2.4 三剑客之awk</span></a></li></ol></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>

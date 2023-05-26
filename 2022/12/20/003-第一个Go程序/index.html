@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="shortcut icon" href="/assets/imgs/favicon.ico" type="image/x-icon"><title>003-第一个Go程序 | Rindemon</title><meta name="keywords" content="Golang"><meta name="keywords" content="个人的一些运维知识学习和经验总结"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"><link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3435803_wadmwlqwhps.css"><link rel="stylesheet" href="/style/index.css"><link rel="stylesheet" href="/assets/lib/prettify/prettify.css"><link rel="stylesheet" href="/assets/lib/fancybox/fancybox.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="app"><header class="header yu13_p_30" id="header"><div class="header_left"><h1 class="yu13_logo"><a id="logo" href="/">Rindemon</a></h1></div><div class="header_right"><div class="header_search yu13_cursor yu13_hover" id="search"><i class="yufont icon-sousuo"></i></div><div class="line yu13_p_10"></div><nav class="header_nav"><ul class="nav"><li class="menu_nav"><a href="/"><i class="fas"></i><span> 首页</span></a></li><li class="menu_nav"><a href="/archives"><i class="fas"></i><span> 归档</span></a></li><li class="menu_nav"><a href="/categories"><i class="fas"></i><span> 分类</span></a></li><li class="menu_nav"><a href="/tags"><i class="fas"></i><span> 标签</span></a></li><li class="menu_nav"><a href="/links"><i class="fas"></i><span> 友情链接</span></a></li></ul></nav></div></header><div class="article_topbg" style="background-image: url('/assets/imgs/top_bg.jpg')"><div class="topbg_container"><h1 class="title">003-第一个Go程序</h1><div class="info"><div class="article_meta"><div class="left"><span class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/><a href="/about">Rindemon</a></span><span><i class="yufont icon-yingyong"></i><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发</a></span><span><i class="yufont icon-rili"></i>2023-2-27</span></div></div></div></div></div><div class="container log_container clearfix"><div class="article_content left"> <div class="article_main"><article class="content"><div class="content_text article_text"> <h1 id="第一个Go程序"><a href="#第一个Go程序" class="headerlink" title="第一个Go程序"></a>第一个Go程序</h1><h2 id="1-输出hello-world"><a href="#1-输出hello-world" class="headerlink" title="1.输出hello world"></a>1.输出hello world</h2><pre><code class="go">package main    // 声明 main 包
+import (
+    &quot;fmt&quot;       // 导入 fmt 包，打印字符串是需要用到
+)
+func main() &#123;   // 声明 main 主函数
+    fmt.Println(&quot;Hello World!&quot;) // 打印 Hello World!
+&#125;
+</code></pre>
+<h2 id="2-package"><a href="#2-package" class="headerlink" title="2.package"></a>2.package</h2><p>Go语言以“包”作为管理单位，每个 Go 源文件必须先声明它所属的包，所以我们会看到每个 Go 源文件的开头都是一个 package 声明，格式如下</p>
+<pre><code class="go">package name
+</code></pre>
+<p>其中 package 是声明包名的关键字，name 为包的名字。</p>
+<p>Go语言的包与文件夹是一一对应的，它具有以下几点特性：</p>
+<ul>
+<li>一个目录下的同级文件属于同一个包。</li>
+<li>包名可以与其目录名不同。</li>
+<li>main 包是Go语言程序的入口包，一个Go语言程序必须有且仅有一个 main 包。如果一个程序没有 main 包，那么编译时将会出错，无法生成可执行文件。</li>
+</ul>
+<h2 id="3-impot-导入包"><a href="#3-impot-导入包" class="headerlink" title="3.impot 导入包"></a>3.impot 导入包</h2><pre><code class="go">import &quot;name&quot;
+</code></pre>
+<p>其中 import 是导入包的关键字，name 为所导入包的名字。</p>
+<p>代码第 4 行导入了 fmt 包，这行代码会告诉 Go 编译器，我们需要用到 fmt 包中的函数或者变量等，fmt 包是Go语言标准库为我们提供的，用于格式化输入输出的内容（类似于C语言中的 stdio.h 头文件），类似的还有 os 包、io 包等，后面我们会详细介绍。</p>
+<p>另外有一点需要注意，导入的包中不能含有代码中没有使用到的包，否则Go编译器会报编译错误，例如 imported and not used: “xxx”，”xxx” 表示包名。</p>
+<p>也可以使用一个 import 关键字导入多个包，此时需要用括号( )将包的名字包围起来，并且每个包名占用一行，也就是写成下面的样子：</p>
+<pre><code class="go">import(
+    &quot;name1&quot;
+    &quot;name2&quot;
+)
+</code></pre>
+<h2 id="4-main函数"><a href="#4-main函数" class="headerlink" title="4.main函数"></a>4.main函数</h2><p>代码的第 7 行创建了一个 main 函数，它是Go语言程序的入口函数，也即程序启动后运行的第一个函数。main 函数只能声明在 main 包中，不能声明在其他包中，并且，一个 main 包中也必须有且仅有一个 main 函数。</p>
+<blockquote>
+<p>C&#x2F;C++ 程序的入口函数也是 main()，一个 C&#x2F;C++ 程序有且只能有一个 main() 函数。</p>
+</blockquote>
+<p>main 函数是自定义函数的一种，在Go语言中，所有函数都以关键字 func 开头的，定义格式如下所示：</p>
+<pre><code class="go">func 函数名 (参数列表) (返回值列表)&#123;
+    函数体
+&#125;
+</code></pre>
+<p>格式说明如下：</p>
+<ul>
+<li>函数名：由字母、数字、下画线_组成，其中，函数名的第一个字母不能为数字，并且，在同一个包内，函数名称不能重名。</li>
+<li>参数列表：一个参数由参数变量和参数类型组成，例如 func foo( a int, b string )。</li>
+<li>返回值列表：可以是返回值类型列表，也可以是参数列表那样变量名与类型的组合，函数有返回值时，必须在函数体中使用 return 语句返回。</li>
+<li>函数体：能够被重复调用的代码片段。</li>
+</ul>
+<p>注意：Go语言函数的左大括号{必须和函数名称在同一行，否则会报错</p>
+<blockquote>
+<p>搬运于<a target="_blank" rel="noopener" href="http://c.biancheng.net/">C语言中文网</a></p>
+</blockquote>
+</div><div class="article_tags"><span> <i class="yufont icon-tag"></i> 标签: </span><a href="/tags/Golang/">Golang</a></div></article><div class="article-copyright"><p>标题: <a href="/2022/12/20/003-%E7%AC%AC%E4%B8%80%E4%B8%AAGo%E7%A8%8B%E5%BA%8F/">003-第一个Go程序</a></p><p> 链接: <a href="/2022/12/20/003-%E7%AC%AC%E4%B8%80%E4%B8%AAGo%E7%A8%8B%E5%BA%8F/">http://cwang110.github.io/2022/12/20/003-%E7%AC%AC%E4%B8%80%E4%B8%AAGo%E7%A8%8B%E5%BA%8F/</a></p><p> 版权声明: 若无特殊标注皆为 Rindemon 原创版权, 转载请以链接形式注明作者及原始出处</p><p>最后编辑时间: 2023-05-26</p></div><div class="page_turning"><a class="page_up" href="/2022/12/20/002-Go%E5%BC%80%E5%8F%91%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/"
+  style="background-image:url(/assets/images/random/21.jpg)">
+  <div class="inner"><span>上一篇:</span>
+    <p>002-Go开发目录结构</p>
+  </div>
+</a>
+<a class="page_down" href="/2022/12/20/004-Go%E8%AF%AD%E8%A8%80%E7%A8%8B%E5%BA%8F%E7%9A%84%E7%BC%96%E8%AF%91%E5%92%8C%E8%BF%90%E8%A1%8C/"
+style="background-image:url(/assets/images/random/11.jpg)">
+<div class="inner"><span>下一篇:</span>
+  <p>004-Go语言程序的编译和运行</p>
+</div>
+</a>
+</div></div></div><div class="article_sidebar left"><div class="author_sidebar sidebar_container"><div class="author_info"><div class="avatar"><img class="yu13_img_rotate" src="/assets/imgs/avatar.png" alt=""/></div><div class="author_name"><h3><a href="/about">Rindemon</a></h3><p>不断学习，不断提升！</p></div></div><div class="author_data"><ul><li> <div> <span>32</span><p>文章</p></div></li><li> <div> <span>7</span><p>分类</p></div></li><li> <div> <span>11</span><p>标签</p></div></li></ul></div></div><div class="catalogue sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-feiji"></i>目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E4%B8%AAGo%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.</span> <span class="toc-text">第一个Go程序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%BE%93%E5%87%BAhello-world"><span class="toc-number">1.1.</span> <span class="toc-text">1.输出hello world</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-package"><span class="toc-number">1.2.</span> <span class="toc-text">2.package</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-impot-%E5%AF%BC%E5%85%A5%E5%8C%85"><span class="toc-number">1.3.</span> <span class="toc-text">3.impot 导入包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-main%E5%87%BD%E6%95%B0"><span class="toc-number">1.4.</span> <span class="toc-text">4.main函数</span></a></li></ol></li></ol></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-24gl-folderOpen"></i>分类</h3><div class="archive_lists"><ul class="category-list"><li><a href="/categories/%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91/">运维开发 (21)</a></li><li><a href="/categories/%E8%BF%90%E7%BB%B4/">运维 (5)</a></li><li><a href="/categories/shell%E7%BC%96%E7%A8%8B/">shell编程 (1)</a></li><li><a href="/categories/Python/">Python (1)</a></li><li><a href="/categories/Vim/">Vim (2)</a></li><li><a href="/categories/mysql/">mysql (1)</a></li><li><a href="/categories/python/">python (1)</a></li></ul></div></div><div class="sidebar_tags sidebar_container"><h3 class="sidebar_title"><i class="yufont icon-tag"></i>标签</h3><a href="/tags/Golang/" style="font-size: 20px;">Golang</a> <a href="/tags/Ldap/" style="font-size: 16px;">Ldap</a> <a href="/tags/Python/" style="font-size: 18px;">Python</a> <a href="/tags/Vim/" style="font-size: 18px;">Vim</a> <a href="/tags/ansible/" style="font-size: 16px;">ansible</a> <a href="/tags/kubeenetes/" style="font-size: 16px;">kubeenetes</a> <a href="/tags/linux/" style="font-size: 16px;">linux</a> <a href="/tags/lvm%E9%80%BB%E8%BE%91%E5%8D%B7/" style="font-size: 16px;">lvm逻辑卷</a> <a href="/tags/python/" style="font-size: 16px;">python</a> <a href="/tags/shell/" style="font-size: 16px;">shell</a> <a href="/tags/sql/" style="font-size: 16px;">sql</a></div></div></div><footer class="footer"> <div class="footer_bottom"><div class="footer_box"><div class="copy"><span>框架</span><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn">Hexo</a><span>主题</span><a target="_blank" rel="noopener" href="https://github.com/lyboy6/hexo-theme-monie">monie</a></div><div class="copy"><span>© 2022-2023<a href="/">Rindemon</a></span></div><div class="copy"><span><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/">蜀ICP备2023003414号-1</a></span></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"> </script><script src="/assets/lib/prettify/prettify.js"> </script><script src="/assets/lib/fancybox/fancybox.js"> </script><script src="/assets/js/app.js"> </script></div></body></html>
